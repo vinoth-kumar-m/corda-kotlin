@@ -1,4 +1,4 @@
-package com.template.contracts
+package com.tokens.contracts
 
 import net.corda.core.contracts.CommandData
 import net.corda.core.contracts.Contract
@@ -16,6 +16,7 @@ class TemplateContract : Contract {
     // A transaction is valid if the verify() function of the contract of all the transaction's input and output states
     // does not throw an exception.
     override fun verify(tx: LedgerTransaction) {
+
         // Verification logic goes here.
     }
 

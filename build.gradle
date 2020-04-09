@@ -10,6 +10,12 @@ buildscript {
         corda_core_release_group =  constants.getProperty("cordaCoreReleaseGroup")
         corda_release_version = constants.getProperty("cordaVersion")
         corda_core_release_version = constants.getProperty("cordaCoreVersion")
+        tokens_release_group = constants.getProperty("tokensReleaseGroup")
+        tokens_release_version = constants.getProperty("tokensReleaseVersion")
+        accounts_release_group = constants.getProperty("accountsReleaseGroup")
+        accounts_release_version = constants.getProperty("accountsReleaseVersion")
+        confidential_id_release_group = constants.getProperty("confidentialIDReleaseGroup")
+        confidential_id_release_version = constants.getProperty("confidentialIDReleaseVersion")
         corda_gradle_plugins_version = constants.getProperty("gradlePluginsVersion")
         kotlin_version = constants.getProperty("kotlinVersion")
         junit_version = constants.getProperty("junitVersion")
@@ -26,6 +32,8 @@ buildscript {
         mavenLocal()
         mavenCentral()
         jcenter()
+        maven { url 'http://ci-artifactory.corda.r3cev.com/artifactory/corda-lib' }
+        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda' }
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-releases' }
     }
 
@@ -48,6 +56,8 @@ allprojects {
         jcenter()
         mavenCentral()
         maven { url 'https://software.r3.com/artifactory/corda' }
+        maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-lib" }
+        /*maven { url "https://repo.gradle.org/gradle/libs-releases-local" }*/
         maven { url 'https://jitpack.io' }
     }
 
@@ -108,6 +118,10 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         projectCordapp {
             deploy = false
         }
+        cordapp("$confidential_id_release_group:ci-workflows:$confidential_id_release_version")
+        cordapp("$accounts_release_group:accounts-contracts:$accounts_release_version")
+        cordapp("$accounts_release_group:accounts-workflows:$accounts_release_version")
+
         cordapp project(':contracts')
         cordapp project(':workflows')
     }
