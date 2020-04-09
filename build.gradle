@@ -132,7 +132,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         cordapp("$accounts_release_group:accounts-contracts:$accounts_release_version")
         cordapp("$accounts_release_group:accounts-workflows:$accounts_release_version")
         cordapp "$tokens_release_group:tokens-contracts:$tokens_release_version"
-        cordapp "$tokens_release_group:tokens-contracts:$tokens_release_version"
+        cordapp "$tokens_release_group:tokens-workflows:$tokens_release_version"
 
         cordapp project(':contracts')
         cordapp project(':workflows')
