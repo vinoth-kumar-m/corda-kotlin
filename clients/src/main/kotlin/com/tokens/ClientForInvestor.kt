@@ -1,14 +1,19 @@
 package com.tokens
 
 import com.r3.corda.lib.accounts.contracts.states.AccountInfo
-import com.r3.corda.lib.accounts.workflows.flows.CreateAccount
+import com.r3.corda.lib.accounts.workflows.flows.AccountInfoByUUID
+import com.r3.corda.lib.accounts.workflows.flows.RequestAccountInfo
+import com.r3.corda.lib.accounts.workflows.flows.RequestKeyForAccount
+import com.tokens.flows.IssueCommercialPaperFlow
 import net.corda.client.rpc.CordaRPCClient
-import net.corda.core.contracts.StateAndRef
+import net.corda.core.contracts.Amount
+import net.corda.core.identity.CordaX500Name
+import net.corda.core.identity.Party
 import net.corda.core.messaging.startFlow
 import net.corda.core.utilities.NetworkHostAndPort
-import net.corda.core.utilities.NetworkHostAndPort.Companion.parse
-import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
+import java.math.BigDecimal
+import java.util.*
 
 /**
  * Connects to a Corda node via RPC and performs RPC operations on the node.
@@ -25,14 +30,29 @@ private class ClientForInvestor {
     fun main(args: Array<String>) {
         // Create an RPC connection to the node.
         require(args.size == 4) { "Usage: Client <node address> <port> <rpc username> <rpc password>" }
-        val nodeAddress = args[0]
-        val port: Int = args[1].toInt()
-        val rpcUsername = args[2]
-        val rpcPassword = args[3]
+        val nodeAddress = "3.83.214.30"
+        val port: Int = 10006
+        val rpcUsername = "issuer"
+        val rpcPassword = "issuer"
         val client = CordaRPCClient(NetworkHostAndPort(nodeAddress, port))
         val rpcOps = client.start(rpcUsername, rpcPassword).proxy
 
-        val account: StateAndRef<AccountInfo> = rpcOps.startFlow(::CreateAccount, "vinoth-kumar-m").returnValue.getOrThrow()
+        val identifier = UUID.fromString("vinoth-kumar-m")
+        val investor: Party? = rpcOps.wellKnownPartyFromX500Name(CordaX500Name("Investor", "New York", "US"))
+
+        var accountInfo: AccountInfo? = rpcOps.startFlow(::AccountInfoByUUID, identifier).returnValue.get()?.state?.data
+
+        if(accountInfo == null && investor != null) {
+            accountInfo = rpcOps.startFlow(::RequestAccountInfo, identifier, investor).returnValue.get()
+        }
+
+        if(accountInfo != null && investor != null) {
+            val key = rpcOps.startFlow(::RequestKeyForAccount, accountInfo).returnValue.get()
+            if(key != null) {
+                rpcOps.startFlow(::IssueCommercialPaperFlow, Amount.fromDecimal(BigDecimal(100), Currency.getInstance(Locale.US)), key, investor)
+            }
+        }
+
 
         logger.info("Account created successfully.")
     }
