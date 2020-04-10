@@ -23,6 +23,12 @@ dependencies {
     compile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
     compile "org.apache.logging.log4j:log4j-web:${log4j_version}"
     compile "org.slf4j:jul-to-slf4j:$slf4j_version"
+
+    compile "$accounts_release_group:accounts-contracts:$accounts_release_version"
+    compile "$accounts_release_group:accounts-workflows:$accounts_release_version"
+    compile "$tokens_release_group:tokens-contracts:$tokens_release_version"
+    compile "$tokens_release_group:tokens-workflows:$tokens_release_version"
+
 }
 
 
