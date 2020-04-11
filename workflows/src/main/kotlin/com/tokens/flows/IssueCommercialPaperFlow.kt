@@ -6,10 +6,7 @@ import com.tokens.states.CommercialPaper
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.TimeWindow
-import net.corda.core.flows.FinalityFlow
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.InitiatingFlow
-import net.corda.core.flows.StartableByRPC
+import net.corda.core.flows.*
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.transactions.TransactionBuilder
@@ -51,3 +48,13 @@ class IssueCommercialPaperFlow(
     private fun maturityDate(): Instant = LocalDate.of(2020, 12, 31).atStartOfDay(ZoneId.systemDefault()).toInstant()
 
 }
+
+// Commercial Paper Responder Flow
+@InitiatedBy(IssueCommercialPaperFlow::class)
+class IssueCommercialPaperResponderFlow(private val issuerSession: FlowSession) : FlowLogic<Unit>() {
+    @Suspendable
+    override fun call() {
+        subFlow(ReceiveFinalityFlow(issuerSession))
+    }
+}
+
