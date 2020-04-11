@@ -31,13 +31,13 @@ private class ClientForInvestor {
         // Create an RPC connection to the node.
         require(args.size == 4) { "Usage: Client <node address> <port> <rpc username> <rpc password>" }
         val nodeAddress = "3.83.214.30"
-        val port: Int = 10006
+        val port = 10006
         val rpcUsername = "issuer"
         val rpcPassword = "issuer"
         val client = CordaRPCClient(NetworkHostAndPort(nodeAddress, port))
         val rpcOps = client.start(rpcUsername, rpcPassword).proxy
 
-        val identifier = UUID.fromString("6840641e-9c93-443d-88a6-8f349fb159d5")
+        val identifier = UUID.fromString("78cb7c60-fff8-44fa-b1fe-c8eea8bb0417")
         logger.debug("Identifier: {}", identifier)
 
         val investor: Party? = rpcOps.wellKnownPartyFromX500Name(CordaX500Name("Investor", "New York", "US"))

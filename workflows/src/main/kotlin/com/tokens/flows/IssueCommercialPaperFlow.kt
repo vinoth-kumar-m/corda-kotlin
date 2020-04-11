@@ -10,6 +10,8 @@ import net.corda.core.flows.*
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.transactions.TransactionBuilder
+import net.corda.core.utilities.ProgressTracker
+import net.corda.core.utilities.ProgressTracker.Step
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -20,10 +22,33 @@ import java.util.*
 class IssueCommercialPaperFlow(
         private val faceValue: Amount<Currency>,
         private val owner: AbstractParty,
-        private val investor: Party) : FlowLogic<Unit>() {
+        private val investor: Party
+) : FlowLogic<Unit>() {
+
+    companion object {
+
+        object IDENTIFYING_NOTARY: Step("Identifying notary service for the flow")
+        object TX_BUILDING : Step("Building a transaction.")
+        object TX_SIGNING : Step("Signing a transaction.")
+        object INITIATING_INVESTOR_FLOW: Step("Initiating Investor flow")
+        object FINALISATION : Step("Finalising a transaction.") {
+            override fun childProgressTracker() = FinalityFlow.tracker()
+        }
+
+        fun tracker() = ProgressTracker(
+                IDENTIFYING_NOTARY,
+                TX_BUILDING,
+                TX_SIGNING,
+                INITIATING_INVESTOR_FLOW,
+                FINALISATION
+        )
+    }
+
+    override val progressTracker = tracker()
 
     @Suspendable
     override fun call() {
+        progressTracker.currentStep = IDENTIFYING_NOTARY
         val notary = serviceHub.networkMapCache.notaryIdentities[0]
         val commercialPaper = CommercialPaper(
                 ourIdentity,
@@ -33,15 +58,18 @@ class IssueCommercialPaperFlow(
         )
         val command = Command(CommercialPaperContract.Commands.Issue(), listOf(ourIdentity.owningKey))
 
+        progressTracker.currentStep = TX_BUILDING
         val txBuilder = TransactionBuilder(notary)
                 .addOutputState(commercialPaper)
                 .addCommand(command)
                 .setTimeWindow(TimeWindow.fromOnly(Instant.now()))
 
+        progressTracker.currentStep = TX_SIGNING
         val signedTx = serviceHub.signInitialTransaction(txBuilder)
 
         val investorSession = initiateFlow(investor)
 
+        progressTracker.currentStep = FINALISATION
         subFlow(FinalityFlow(signedTx, investorSession))
     }
 
