@@ -5,6 +5,7 @@ import com.tokens.contracts.CommercialPaperContract
 import com.tokens.states.CommercialPaper
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.Command
+import net.corda.core.contracts.TimeWindow
 import net.corda.core.flows.FinalityFlow
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.InitiatingFlow
@@ -23,6 +24,7 @@ class IssueCommercialPaperFlow(
         private val faceValue: Amount<Currency>,
         private val owner: AbstractParty,
         private val investor: Party) : FlowLogic<Unit>() {
+
     @Suspendable
     override fun call() {
         val notary = serviceHub.networkMapCache.notaryIdentities[0]
@@ -37,6 +39,7 @@ class IssueCommercialPaperFlow(
         val txBuilder = TransactionBuilder(notary)
                 .addOutputState(commercialPaper)
                 .addCommand(command)
+                .setTimeWindow(TimeWindow.fromOnly(Instant.now()))
 
         val signedTx = serviceHub.signInitialTransaction(txBuilder)
 
