@@ -50,6 +50,7 @@ dependencies {
 
     // CorDapp dependencies.
     cordapp project(":contracts")
+    cordapp("$accounts_release_group:accounts-contracts:$accounts_release_version")
     cordapp("$accounts_release_group:accounts-workflows:$accounts_release_version")
 }
 
