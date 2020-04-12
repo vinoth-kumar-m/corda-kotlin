@@ -1,8 +1,13 @@
 package com.tokens.webserver
 
+import com.tokens.states.CommercialPaper
+import net.corda.core.contracts.UniqueIdentifier
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 /**
@@ -16,10 +21,11 @@ class Controller(rpc: NodeRPCConnection) {
         private val logger = LoggerFactory.getLogger(RestController::class.java)
     }
 
-    private val proxy = rpc.proxy
+    private val rpcOps = rpc.proxy
 
-    @GetMapping(value = ["/templateendpoint"], produces = ["text/plain"])
-    private fun templateendpoint(): String {
-        return "Define an endpoint here."
+    @GetMapping(value = ["/issue"], produces = ["text/plain"])
+    private fun issue(@RequestParam identifier: String, @RequestParam faceValue: Int): ResponseEntity<CommercialPaper> {
+        logger.info("Identified: $identifier, Face Value: $faceValue")
+        return ResponseEntity(HttpStatus.OK)
     }
 }

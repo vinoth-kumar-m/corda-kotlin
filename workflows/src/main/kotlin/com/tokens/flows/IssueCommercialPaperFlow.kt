@@ -1,6 +1,9 @@
 package com.tokens.flows
 
 import co.paralleluniverse.fibers.Suspendable
+import com.r3.corda.lib.accounts.workflows.accountService
+import com.r3.corda.lib.accounts.workflows.flows.RequestAccountInfo
+import com.r3.corda.lib.accounts.workflows.flows.RequestKeyForAccount
 import com.tokens.contracts.CommercialPaperContract
 import com.tokens.states.CommercialPaper
 import net.corda.core.contracts.Amount
@@ -21,12 +24,12 @@ import java.util.*
 @StartableByRPC
 class IssueCommercialPaperFlow(
         private val faceValue: Amount<Currency>,
-        private val owner: AbstractParty,
+        private val accountIdentifier: UUID,
         private val investor: Party
 ) : FlowLogic<Unit>() {
 
     companion object {
-
+        object RETRIEVE_ACCOUNT_INFO: Step("Retrieving Account information from local node")
         object IDENTIFYING_NOTARY: Step("Identifying notary service for the flow")
         object TX_BUILDING : Step("Building a transaction.")
         object TX_SIGNING : Step("Signing a transaction.")
@@ -36,6 +39,7 @@ class IssueCommercialPaperFlow(
         }
 
         fun tracker() = ProgressTracker(
+                RETRIEVE_ACCOUNT_INFO,
                 IDENTIFYING_NOTARY,
                 TX_BUILDING,
                 TX_SIGNING,
@@ -48,6 +52,17 @@ class IssueCommercialPaperFlow(
 
     @Suspendable
     override fun call() {
+
+        progressTracker.currentStep= RETRIEVE_ACCOUNT_INFO
+        var accountInfo = accountService.accountInfo(accountIdentifier)?.state?.data
+        if(accountInfo == null) {
+            logger.info("Account Information for '$accountIdentifier' not found in local node")
+            accountInfo = subFlow(RequestAccountInfo(accountIdentifier, investor))
+            if(accountInfo == null) throw FlowException("Account Information not available")
+        }
+
+        val owner = subFlow(RequestKeyForAccount(accountInfo))
+
         progressTracker.currentStep = IDENTIFYING_NOTARY
         val notary = serviceHub.networkMapCache.notaryIdentities[0]
         val commercialPaper = CommercialPaper(

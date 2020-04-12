@@ -8,6 +8,7 @@ import net.corda.core.transactions.LedgerTransaction
 // * Contract *
 // ************
 class CommercialPaperContract : Contract {
+
     companion object {
         // Used to identify our contract when building a transaction.
         const val ID = "com.tokens.contracts.CommercialPaperContract"
@@ -18,7 +19,7 @@ class CommercialPaperContract : Contract {
     override fun verify(tx: LedgerTransaction) {
         // Verification logic goes here.
         val groups = tx.groupStates(CommercialPaper::withoutOwner)
-        val command= tx.commands.requireSingleCommand<CommercialPaperContract.Commands>()
+        val command= tx.commands.requireSingleCommand<Commands>()
         val timeWindow = tx.timeWindow
 
         for((inputs, outputs, _) in groups)
@@ -34,27 +35,6 @@ class CommercialPaperContract : Contract {
             }
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     // Used to indicate the transaction's intent.
     interface Commands : CommandData {

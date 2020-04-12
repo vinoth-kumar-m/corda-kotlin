@@ -37,27 +37,15 @@ private class ClientForInvestor {
         val client = CordaRPCClient(NetworkHostAndPort(nodeAddress, port))
         val rpcOps = client.start(rpcUsername, rpcPassword).proxy
 
-        val identifier = UUID.fromString("78cb7c60-fff8-44fa-b1fe-c8eea8bb0417")
+        val identifier = UUID.fromString("e681201d-77d2-4530-b6b0-1e4da99b00c3")
         logger.debug("Identifier: {}", identifier)
 
         val investor: Party? = rpcOps.wellKnownPartyFromX500Name(CordaX500Name("Investor", "New York", "US"))
         logger.debug("Investor: {}", investor)
 
-        var accountInfo: AccountInfo? = rpcOps.startFlow(::AccountInfoByUUID, identifier).returnValue.get()?.state?.data
-        logger.debug("Account available in Issuer Node: {}", accountInfo)
-
-        if(accountInfo == null && investor != null) {
-            accountInfo = rpcOps.startFlow(::RequestAccountInfo, identifier, investor).returnValue.get()
-            logger.debug("Account requested from Investor Node: {}", accountInfo)
-        }
-
-        if(accountInfo != null && investor != null) {
-            val key = rpcOps.startFlow(::RequestKeyForAccount, accountInfo).returnValue.get()
-            logger.info("Key requested from Investor Node: {}", key)
-            if(key != null) {
-                logger.info("Issuing commercial paper..")
-                rpcOps.startFlow(::IssueCommercialPaperFlow, Amount.fromDecimal(BigDecimal(100), Currency.getInstance(Locale.US)), key, investor)
-            }
+        if(investor != null) {
+            logger.info("Issuing commercial paper..")
+            rpcOps.startFlow(::IssueCommercialPaperFlow, Amount.fromDecimal(BigDecimal(500), Currency.getInstance(Locale.US)), identifier, investor)
         } else {
             throw Exception("Either Account / Investor information not available")
         }
