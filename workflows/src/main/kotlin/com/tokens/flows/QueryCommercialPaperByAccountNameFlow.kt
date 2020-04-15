@@ -36,24 +36,20 @@ class QueryCommercialPaperByAccountName(
     override fun call(): List<CommercialPaper> {
 
         progressTracker.currentStep = RETRIEVING_ACCOUNT_INFO
-        val accountInfo = accountService.accountInfo(name).singleOrNull()?.state?.data
+        val accountInfo = accountService.accountInfo(name).singleOrNull()?.state?.data ?: throw IllegalArgumentException("Account does not exists")
 
-        if(accountInfo != null) {
-            progressTracker.currentStep = CONSTRUCT_QUERY_CRITERIA
-            val criteria = QueryCriteria.VaultQueryCriteria(
-                    externalIds = listOf(accountInfo.identifier.id)
-            )
+        progressTracker.currentStep = CONSTRUCT_QUERY_CRITERIA
+        val criteria = QueryCriteria.VaultQueryCriteria(
+                externalIds = listOf(accountInfo.identifier.id)
+        )
 
-            progressTracker.currentStep = FETCHING_COMMERCIAL_PAPERS
-            return serviceHub.vaultService.queryBy(
-                    contractStateType = CommercialPaper::class.java,
-                    criteria = criteria
-            ).states.map {
-                it.state.data
-            }
+        progressTracker.currentStep = FETCHING_COMMERCIAL_PAPERS
+        return serviceHub.vaultService.queryBy(
+                contractStateType = CommercialPaper::class.java,
+                criteria = criteria
+        ).states.map {
+            it.state.data
         }
-        else
-            throw IllegalArgumentException("Account does not exists")
     }
 
 }
