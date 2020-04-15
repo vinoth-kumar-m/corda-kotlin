@@ -54,12 +54,9 @@ class IssueCommercialPaperFlow(
     override fun call() {
 
         progressTracker.currentStep= RETRIEVE_ACCOUNT_INFO
-        var accountInfo = accountService.accountInfo(accountIdentifier)?.state?.data
-        if(accountInfo == null) {
-            logger.info("Account Information for '$accountIdentifier' not found in local node")
-            accountInfo = subFlow(RequestAccountInfo(accountIdentifier, investor))
-            if(accountInfo == null) throw FlowException("Account Information not available")
-        }
+        val accountInfo = accountService.accountInfo(accountIdentifier)?.state?.data
+                ?: subFlow(RequestAccountInfo(accountIdentifier, investor))
+                ?: throw FlowException("Couldn't find account information for $accountIdentifier")
 
         val owner = subFlow(RequestKeyForAccount(accountInfo))
 

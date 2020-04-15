@@ -37,18 +37,16 @@ private class ClientForInvestor {
         val client = CordaRPCClient(NetworkHostAndPort(nodeAddress, port))
         val rpcOps = client.start(rpcUsername, rpcPassword).proxy
 
-        val identifier = UUID.fromString("e681201d-77d2-4530-b6b0-1e4da99b00c3")
+        val identifier = UUID.fromString("93a25cc2-7c28-4ef9-8675-0807d7ffae93")
+                ?: throw Exception("Couldn't generate UUID from String")
         logger.debug("Identifier: {}", identifier)
 
-        val investor: Party? = rpcOps.wellKnownPartyFromX500Name(CordaX500Name("Investor", "New York", "US"))
+        val investor = rpcOps.wellKnownPartyFromX500Name(CordaX500Name("Investor", "New York", "US"))
+                ?: throw Exception("Investor information not available")
         logger.debug("Investor: {}", investor)
 
-        if(investor != null) {
-            logger.info("Issuing commercial paper..")
-            rpcOps.startFlow(::IssueCommercialPaperFlow, Amount.fromDecimal(BigDecimal(500), Currency.getInstance(Locale.US)), identifier, investor)
-        } else {
-            throw Exception("Either Account / Investor information not available")
-        }
+        logger.info("Issuing commercial paper..")
+        rpcOps.startFlow(::IssueCommercialPaperFlow, Amount.fromDecimal(BigDecimal(500), Currency.getInstance(Locale.US)), identifier, investor)
 
 
         logger.info("Flow completed successfully")

@@ -28,9 +28,9 @@ class CommercialPaperContract : Contract {
                 val output = outputs.single()
                 val time = timeWindow?.fromTime ?: throw IllegalArgumentException("Issuance must be timestamped")
                 requireThat {
-                    "There should not be any inputs" using (inputs.isEmpty())
+                    "No input states required to issue a commercial paper" using (inputs.isEmpty())
                     "Maturity date should be in future" using(output.maturityDate > time)
-                    "FaceValue should be greater than Zero" using(output.faceValue.quantity > 0)
+                    "Face value should be greater than zero" using(output.faceValue.quantity > 0)
                 }
             }
         }
