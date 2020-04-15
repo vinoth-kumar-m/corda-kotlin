@@ -24,7 +24,6 @@ private class ClientForInvestor {
 
     fun main(args: Array<String>) {
         // Create an RPC connection to the node.
-        require(args.size == 4) { "Usage: Client <node address> <port> <rpc username> <rpc password>" }
         val nodeAddress = "3.83.214.30"
         val port = 10006
         val rpcUsername = "issuer"
