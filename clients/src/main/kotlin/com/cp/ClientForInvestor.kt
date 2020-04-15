@@ -1,14 +1,9 @@
-package com.tokens
+package com.cp
 
-import com.r3.corda.lib.accounts.contracts.states.AccountInfo
-import com.r3.corda.lib.accounts.workflows.flows.AccountInfoByUUID
-import com.r3.corda.lib.accounts.workflows.flows.RequestAccountInfo
-import com.r3.corda.lib.accounts.workflows.flows.RequestKeyForAccount
-import com.tokens.flows.IssueCommercialPaperFlow
+import com.cp.flows.IssueCommercialPaperFlow
 import net.corda.client.rpc.CordaRPCClient
 import net.corda.core.contracts.Amount
 import net.corda.core.identity.CordaX500Name
-import net.corda.core.identity.Party
 import net.corda.core.messaging.startFlow
 import net.corda.core.utilities.NetworkHostAndPort
 import net.corda.core.utilities.loggerFor

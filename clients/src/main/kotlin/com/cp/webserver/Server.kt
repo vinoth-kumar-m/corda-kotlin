@@ -1,4 +1,4 @@
-package com.tokens.webserver
+package com.cp.webserver
 
 import org.springframework.boot.Banner
 import org.springframework.boot.SpringApplication

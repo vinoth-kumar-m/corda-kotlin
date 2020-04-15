@@ -1,7 +1,7 @@
-package com.tokens.flows
+package com.cp.flows
 
 import com.r3.corda.lib.accounts.workflows.accountService
-import com.tokens.states.CommercialPaper
+import com.cp.states.CommercialPaper
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.StartableByRPC

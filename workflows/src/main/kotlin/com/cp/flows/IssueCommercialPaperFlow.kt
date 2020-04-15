@@ -1,16 +1,15 @@
-package com.tokens.flows
+package com.cp.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.accounts.workflows.accountService
 import com.r3.corda.lib.accounts.workflows.flows.RequestAccountInfo
 import com.r3.corda.lib.accounts.workflows.flows.RequestKeyForAccount
-import com.tokens.contracts.CommercialPaperContract
-import com.tokens.states.CommercialPaper
+import com.cp.contracts.CommercialPaperContract
+import com.cp.states.CommercialPaper
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.TimeWindow
 import net.corda.core.flows.*
-import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
@@ -31,10 +30,10 @@ class IssueCommercialPaperFlow(
     companion object {
         object RETRIEVE_ACCOUNT_INFO: Step("Retrieving Account information from local node")
         object IDENTIFYING_NOTARY: Step("Identifying notary service for the flow")
-        object TX_BUILDING : Step("Building a transaction.")
-        object TX_SIGNING : Step("Signing a transaction.")
+        object TX_BUILDING: Step("Building a transaction.")
+        object TX_SIGNING: Step("Signing a transaction.")
         object INITIATING_INVESTOR_FLOW: Step("Initiating Investor flow")
-        object FINALISATION : Step("Finalising a transaction.") {
+        object TX_FINALIZE: Step("Finalising a transaction.") {
             override fun childProgressTracker() = FinalityFlow.tracker()
         }
 
@@ -44,7 +43,7 @@ class IssueCommercialPaperFlow(
                 TX_BUILDING,
                 TX_SIGNING,
                 INITIATING_INVESTOR_FLOW,
-                FINALISATION
+                TX_FINALIZE
         )
     }
 
@@ -81,7 +80,7 @@ class IssueCommercialPaperFlow(
 
         val investorSession = initiateFlow(investor)
 
-        progressTracker.currentStep = FINALISATION
+        progressTracker.currentStep = TX_FINALIZE
         subFlow(FinalityFlow(signedTx, investorSession))
     }
 

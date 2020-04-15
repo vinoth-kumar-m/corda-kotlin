@@ -1,7 +1,6 @@
-package com.tokens.webserver
+package com.cp.webserver
 
-import com.tokens.states.CommercialPaper
-import net.corda.core.contracts.UniqueIdentifier
+import com.cp.states.CommercialPaper
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

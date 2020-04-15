@@ -1,6 +1,6 @@
-package com.tokens.states
+package com.cp.states
 
-import com.tokens.contracts.CommercialPaperContract
+import com.cp.contracts.CommercialPaperContract
 import net.corda.core.contracts.*
 import net.corda.core.crypto.NullKeys
 import net.corda.core.identity.AbstractParty
@@ -9,13 +9,17 @@ import net.corda.core.identity.Party
 import java.time.Instant
 import java.util.*
 
+/**
+ * Commercial Paper - State
+ * This state is going to be used as shared fact between Nodes
+ */
 @BelongsToContract(CommercialPaperContract::class)
 data class CommercialPaper(val issuer: Party,
                            val owner: AbstractParty,
                            val faceValue: Amount<Currency>,
-                           val maturityDate: Instant) : LinearState {
-
-    override val linearId = UniqueIdentifier()
+                           val maturityDate: Instant,
+                           val status: String = "Active",
+                           override val linearId: UniqueIdentifier = UniqueIdentifier()) : LinearState {
 
     override val participants: List<AbstractParty> get() = listOf(issuer, owner)
 

@@ -1,6 +1,6 @@
-package com.tokens.contracts
+package com.cp.contracts
 
-import com.tokens.states.CommercialPaper
+import com.cp.states.CommercialPaper
 import net.corda.core.contracts.*
 import net.corda.core.transactions.LedgerTransaction
 
