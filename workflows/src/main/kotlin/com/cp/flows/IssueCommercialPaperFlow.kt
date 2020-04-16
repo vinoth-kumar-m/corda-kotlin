@@ -60,7 +60,7 @@ class IssueCommercialPaperFlow(
         val owner = subFlow(RequestKeyForAccount(accountInfo))
 
         progressTracker.currentStep = IDENTIFYING_NOTARY
-        val notary = serviceHub.networkMapCache.notaryIdentities[0]
+        val notary = serviceHub.networkMapCache.notaryIdentities.first()
         val commercialPaper = CommercialPaper(
                 ourIdentity,
                 owner,
@@ -74,6 +74,8 @@ class IssueCommercialPaperFlow(
                 .addOutputState(commercialPaper)
                 .addCommand(command)
                 .setTimeWindow(TimeWindow.fromOnly(Instant.now()))
+
+        txBuilder.verify(serviceHub)
 
         progressTracker.currentStep = TX_SIGNING
         val signedTx = serviceHub.signInitialTransaction(txBuilder)

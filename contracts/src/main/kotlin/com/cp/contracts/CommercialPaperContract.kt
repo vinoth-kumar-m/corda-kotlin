@@ -39,7 +39,7 @@ class CommercialPaperContract : Contract {
     // Used to indicate the transaction's intent.
     interface Commands : CommandData {
         class Issue: TypeOnlyCommandData(), Commands
-        class Move: TypeOnlyCommandData(), Commands
+        class Transfer: TypeOnlyCommandData(), Commands
         class Redeem: TypeOnlyCommandData(), Commands
     }
 }

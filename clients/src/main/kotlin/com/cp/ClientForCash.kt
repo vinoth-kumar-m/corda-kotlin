@@ -6,6 +6,7 @@ import net.corda.core.contracts.Amount
 import net.corda.core.messaging.startFlow
 import net.corda.core.utilities.NetworkHostAndPort
 import net.corda.core.utilities.loggerFor
+import net.corda.finance.workflows.getCashBalance
 import net.corda.finance.workflows.getCashBalances
 import java.math.BigDecimal
 import java.util.*
@@ -31,7 +32,7 @@ private class ClientForCash {
         val client = CordaRPCClient(NetworkHostAndPort(nodeAddress, port))
         val rpcOps = client.start(rpcUsername, rpcPassword).proxy
 
-        val identifier = UUID.fromString("67c8cf0b-5e27-4acb-9615-555d697bda80")
+        val identifier = UUID.fromString("32a97541-0e9c-4cc6-9e5f-f019929880db")
                 ?: throw Exception("Couldn't generate UUID from String")
 
         logger.debug("Identifier: {}", identifier)
@@ -42,6 +43,6 @@ private class ClientForCash {
 
         logger.info("Flow completed successfully")
 
-        logger.info(rpcOps.getCashBalances().size.toString())
+        logger.debug("Balance: {}", rpcOps.getCashBalance(Currency.getInstance(Locale.US)).toString())
     }
 }

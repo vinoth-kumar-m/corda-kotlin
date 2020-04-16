@@ -25,4 +25,6 @@ data class CommercialPaper(val issuer: Party,
 
     fun withoutOwner() = copy(owner = AnonymousParty(owningKey = NullKeys.NullPublicKey))
 
+    fun withNewOwner(newOwner: AbstractParty) = copy(owner = newOwner)
+
 }
