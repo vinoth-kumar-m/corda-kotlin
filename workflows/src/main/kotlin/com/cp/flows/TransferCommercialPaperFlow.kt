@@ -82,9 +82,11 @@ class TransferCommercialPaperFlow(
         val newOwner = subFlow(RequestKeyForAccount(toAccount))
 
         progressTracker.currentStep = IDENTIFYING_NOTARY
+        logger.info("Identifying notary service...")
         val notary = serviceHub.networkMapCache.notaryIdentities.first()
 
         progressTracker.currentStep = TX_BUILDING
+        logger.info("Building transaction")
         val builder = TransactionBuilder(notary = notary)
         val outputState = inputState.withNewOwner(newOwner = newOwner)
         val command = Command(CommercialPaperContract.Commands.Transfer(), listOf(ourIdentity.owningKey, inputState.owner.owningKey))
@@ -94,12 +96,14 @@ class TransferCommercialPaperFlow(
                 command)
 
         progressTracker.currentStep = TX_SIGNING
+        logger.info("Signing Transaction")
         builder.verify(serviceHub)
         val ptx = serviceHub.signInitialTransaction(builder)
         val sessions = (inputState.participants - ourIdentity + investor).map { initiateFlow(it as Party) }.toSet()
         val stx = subFlow(CollectSignaturesFlow(ptx, sessions))
 
         progressTracker.currentStep = TX_FINALIZE
+        logger.info("Finalizing flow")
         return subFlow(FinalityFlow(stx, sessions))
     }
 }
