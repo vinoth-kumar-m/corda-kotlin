@@ -24,7 +24,7 @@ data class CommercialPaper(val issuer: Party,
                            val status: String = "Active",
                            override val linearId: UniqueIdentifier = UniqueIdentifier()) : LinearState {
 
-    override val participants: List<AbstractParty> get() = listOf(issuer)
+    override val participants: List<AbstractParty> get() = listOf(issuer, owner)
 
     fun withoutOwner() = copy(owner = AnonymousParty(owningKey = NullKeys.NullPublicKey))
 

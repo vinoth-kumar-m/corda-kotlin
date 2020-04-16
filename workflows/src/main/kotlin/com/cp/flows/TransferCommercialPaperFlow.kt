@@ -99,7 +99,7 @@ class TransferCommercialPaperFlow(
         logger.info("Signing Transaction")
         builder.verify(serviceHub)
         val ptx = serviceHub.signInitialTransaction(builder)
-        val sessions = (inputState.participants - ourIdentity + investor).map { initiateFlow(it as Party) }.toSet()
+        val sessions = (inputState.participants - ourIdentity - inputState.owner + investor).map { initiateFlow(it as Party) }.toSet()
         val stx = subFlow(CollectSignaturesFlow(ptx, sessions))
 
         progressTracker.currentStep = TX_FINALIZE
