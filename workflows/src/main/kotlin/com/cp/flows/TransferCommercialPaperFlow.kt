@@ -66,6 +66,7 @@ class TransferCommercialPaperFlow(
                 ?: subFlow(RequestAccountInfo(fromIdentifier, investor))
                 ?: throw FlowException("Couldn't find account information for $fromIdentifier")
 
+        logger.info("Input State Owner: {}, Account Participants: {}", inputState.owner.toString(), fromAccount.participants.toString())
         if(inputState.owner !in fromAccount.participants) throw FlowException("Commercial Paper transfer can only be initiated by Owner")
 
         logger.debug("Account's Hosting Node: {}, Our Identity: {}", fromAccount.host, ourIdentity)
