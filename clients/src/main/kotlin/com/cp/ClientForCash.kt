@@ -31,7 +31,7 @@ private class ClientForCash {
         val client = CordaRPCClient(NetworkHostAndPort(nodeAddress, port))
         val rpcOps = client.start(rpcUsername, rpcPassword).proxy
 
-        val identifier = UUID.fromString("a89a1c68-e7cc-4e1e-8519-81d804d14d71")
+        val identifier = UUID.fromString("67c8cf0b-5e27-4acb-9615-555d697bda80")
                 ?: throw Exception("Couldn't generate UUID from String")
 
         logger.debug("Identifier: {}", identifier)
