@@ -30,13 +30,13 @@ class TransferCommercialPaperFlow(
 ) : FlowLogic<SignedTransaction>() {
 
     companion object {
-        object RETRIEVE_COMMERCIAL_PAPER: Step("Retrieving Commercial Paper using Linear ID")
-        object RETRIEVE_ACCOUNT_INFO: Step("Retrieving Account information from local node")
-        object IDENTIFYING_NOTARY: Step("Identifying notary service for the flow")
-        object TX_BUILDING: Step("Building a transaction.")
-        object TX_SIGNING: Step("Signing a transaction.")
-        object INITIATING_INVESTOR_FLOW: Step("Initiating Investor flow")
-        object TX_FINALIZE: Step("Finalising a transaction.") {
+        object RETRIEVE_COMMERCIAL_PAPER : Step("Retrieving Commercial Paper using Linear ID")
+        object RETRIEVE_ACCOUNT_INFO : Step("Retrieving Account information from local node")
+        object IDENTIFYING_NOTARY : Step("Identifying notary service for the flow")
+        object TX_BUILDING : Step("Building a transaction.")
+        object TX_SIGNING : Step("Signing a transaction.")
+        object INITIATING_INVESTOR_FLOW : Step("Initiating Investor flow")
+        object TX_FINALIZE : Step("Finalising a transaction.") {
             override fun childProgressTracker() = FinalityFlow.tracker()
         }
 
@@ -58,19 +58,23 @@ class TransferCommercialPaperFlow(
 
         progressTracker.currentStep = RETRIEVE_COMMERCIAL_PAPER
         val queryCriteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(commercialPaperIdentifier))
-        val commercialPaperStateAndRef =  serviceHub.vaultService.queryBy<CommercialPaper>(queryCriteria).states.single()
+        val commercialPaperStateAndRef = serviceHub.vaultService.queryBy<CommercialPaper>(queryCriteria).states.single()
         val inputState = commercialPaperStateAndRef.state.data
 
-        progressTracker.currentStep= RETRIEVE_ACCOUNT_INFO
+        progressTracker.currentStep = RETRIEVE_ACCOUNT_INFO
         val fromAccount = accountService.accountInfo(fromIdentifier)?.state?.data
                 ?: subFlow(RequestAccountInfo(fromIdentifier, investor))
                 ?: throw FlowException("Couldn't find account information for $fromIdentifier")
 
-        logger.info("Input State Owner: {}, Account Participants: {}", inputState.owner.toString(), fromAccount.participants.toString())
-        if(inputState.owner !in fromAccount.participants) throw FlowException("Commercial Paper transfer can only be initiated by Owner")
+        val accountIdentifier = accountService.accountIdForKey(inputState.owner.owningKey)
+                ?: throw FlowException("Couldn't find account information available in the Commercial Paper")
+
+        logger.info("Account Identifier: {}, State: {}", fromAccount.linearId.id, accountIdentifier)
+
+        if (fromAccount.linearId.id == accountIdentifier) throw FlowException("Commercial Paper transfer can only be initiated by Owner")
 
         logger.debug("Account's Hosting Node: {}, Our Identity: {}", fromAccount.host, ourIdentity)
-        if(fromAccount.host != ourIdentity) throw FlowException("Commercial Paper transfer can only be initiated by Account's hosting node")
+        if (fromAccount.host != ourIdentity) throw FlowException("Commercial Paper transfer can only be initiated by Account's hosting node")
 
         val toAccount = accountService.accountInfo(toIdentifier)?.state?.data
                 ?: subFlow(RequestAccountInfo(toIdentifier, investor))
@@ -107,7 +111,7 @@ class TransferCommercialPaperResponderFlow(private val issuerSession: FlowSessio
     @Suspendable
     override fun call(): SignedTransaction {
 
-        val signedTransaction = object: SignTransactionFlow(issuerSession) {
+        val signedTransaction = object : SignTransactionFlow(issuerSession) {
             override fun checkTransaction(stx: SignedTransaction) {
                 val outputState = stx.tx.outputs.single().data
                 "This must be a Commercial Paper Transaction" using (outputState is CommercialPaper)
