@@ -68,6 +68,7 @@ class TransferCommercialPaperFlow(
 
         if(inputState.owner !in fromAccount.participants) throw FlowException("Commercial Paper transfer can only be initiated by Owner")
 
+        logger.debug("Account's Hosting Node: {}, Our Identity: {}", fromAccount.host, ourIdentity)
         if(fromAccount.host != ourIdentity) throw FlowException("Commercial Paper transfer can only be initiated by Account's hosting node")
 
         val toAccount = accountService.accountInfo(toIdentifier)?.state?.data

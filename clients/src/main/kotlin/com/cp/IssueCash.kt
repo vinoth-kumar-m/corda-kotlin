@@ -16,11 +16,11 @@ import java.util.*
  *
  * The RPC connection is configured using command line arguments.
  */
-fun main(args: Array<String>) = ClientForCash().main(args)
+fun main(args: Array<String>) = IssueCash().main(args)
 
-private class ClientForCash {
+private class IssueCash {
     companion object {
-        val logger = loggerFor<ClientForCash>()
+        val logger = loggerFor<IssueCash>()
     }
 
     fun main(args: Array<String>) {
