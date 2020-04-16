@@ -10,8 +10,6 @@ buildscript {
         corda_core_release_group =  constants.getProperty("cordaCoreReleaseGroup")
         corda_release_version = constants.getProperty("cordaVersion")
         corda_core_release_version = constants.getProperty("cordaCoreVersion")
-        tokens_release_group = constants.getProperty("tokensReleaseGroup")
-        tokens_release_version = constants.getProperty("tokensReleaseVersion")
         accounts_release_group = constants.getProperty("accountsReleaseGroup")
         accounts_release_version = constants.getProperty("accountsReleaseVersion")
         confidential_id_release_group = constants.getProperty("confidentialIDReleaseGroup")
@@ -103,11 +101,6 @@ dependencies {
     cordaCompile "org.apache.logging.log4j:log4j-web:${log4j_version}"
     cordaCompile "org.slf4j:jul-to-slf4j:$slf4j_version"
 
-    // Tokens lib
-    cordapp "$tokens_release_group:tokens-contracts:$tokens_release_version"
-    cordapp "$tokens_release_group:tokens-workflows:$tokens_release_version"
-    cordapp "$tokens_release_group:tokens-selection:$tokens_release_version"
-
     // Account lib
     cordapp "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"
     cordapp "$accounts_release_group:accounts-contracts:$accounts_release_version"
@@ -135,9 +128,6 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         cordapp("$confidential_id_release_group:ci-workflows:$confidential_id_release_version")
         cordapp("$accounts_release_group:accounts-contracts:$accounts_release_version")
         cordapp("$accounts_release_group:accounts-workflows:$accounts_release_version")
-        cordapp "$tokens_release_group:tokens-contracts:$tokens_release_version"
-        cordapp "$tokens_release_group:tokens-workflows:$tokens_release_version"
-        cordapp "$tokens_release_group:tokens-selection:$tokens_release_version"
         cordapp "$corda_release_group:corda-finance-contracts:$corda_release_version"
         cordapp "$corda_release_group:corda-finance-workflows:$corda_release_version"
 

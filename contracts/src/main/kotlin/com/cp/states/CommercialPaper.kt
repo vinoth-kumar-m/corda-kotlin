@@ -1,7 +1,10 @@
 package com.cp.states
 
 import com.cp.contracts.CommercialPaperContract
-import net.corda.core.contracts.*
+import net.corda.core.contracts.Amount
+import net.corda.core.contracts.BelongsToContract
+import net.corda.core.contracts.LinearState
+import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.crypto.NullKeys
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.AnonymousParty

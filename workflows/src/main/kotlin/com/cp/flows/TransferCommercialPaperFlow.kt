@@ -72,7 +72,7 @@ class TransferCommercialPaperFlow(
         logger.info("Account Identifier: {}, State: {}", fromAccount.linearId.id, accountIdentifier)
         "Commercial Paper transfer can only be initiated by Owner" using (accountIdentifier.compareTo(fromAccount.linearId.id) == 0)
 
-        logger.debug("Account's Hosting Node: {}, Our Identity: {}", fromAccount.host, ourIdentity)
+        logger.info("Account's Hosting Node: {}, Our Identity: {}", fromAccount.host, ourIdentity)
         "Commercial Paper transfer can only be initiated by Account's hosting node" using (ourIdentity.name == fromAccount.host.name)
 
         val toAccount = accountService.accountInfo(toIdentifier)?.state?.data
