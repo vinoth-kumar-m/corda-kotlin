@@ -103,7 +103,10 @@ class TransferCommercialPaperFlow(
         val sessions = mutableSetOf(initiateFlow(inputState.issuer))
 
         logger.info("Investor Key: {}, Our Identity Key: {}", investor.owningKey, ourIdentity.owningKey)
-        if (investor.owningKey != ourIdentity.owningKey) sessions.add(initiateFlow(investor))
+        if (investor.owningKey != ourIdentity.owningKey) {
+            logger.info("Owning key does not match")
+            // sessions.add(initiateFlow(investor))
+        }
 
         val stx = subFlow(CollectSignaturesFlow(ptx, sessions))
 
