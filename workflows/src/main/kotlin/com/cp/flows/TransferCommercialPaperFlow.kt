@@ -66,15 +66,14 @@ class TransferCommercialPaperFlow(
                 ?: subFlow(RequestAccountInfo(fromIdentifier, investor))
                 ?: throw FlowException("Couldn't find account information for $fromIdentifier")
 
-        val accountIdentifier = accountService.accountIdForKey(inputState.owner.owningKey)
+        val accountIdentifier: UUID = accountService.accountIdForKey(inputState.owner.owningKey)
                 ?: throw FlowException("Couldn't find account information available in the Commercial Paper")
 
         logger.info("Account Identifier: {}, State: {}", fromAccount.linearId.id, accountIdentifier)
-
-        if (fromAccount.linearId.id == accountIdentifier) throw FlowException("Commercial Paper transfer can only be initiated by Owner")
+        "Commercial Paper transfer can only be initiated by Owner" using (accountIdentifier.compareTo(fromAccount.linearId.id) == 0)
 
         logger.debug("Account's Hosting Node: {}, Our Identity: {}", fromAccount.host, ourIdentity)
-        if (fromAccount.host != ourIdentity) throw FlowException("Commercial Paper transfer can only be initiated by Account's hosting node")
+        "Commercial Paper transfer can only be initiated by Account's hosting node" using (ourIdentity.name == fromAccount.host.name)
 
         val toAccount = accountService.accountInfo(toIdentifier)?.state?.data
                 ?: subFlow(RequestAccountInfo(toIdentifier, investor))
