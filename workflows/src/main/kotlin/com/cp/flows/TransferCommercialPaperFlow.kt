@@ -100,7 +100,7 @@ class TransferCommercialPaperFlow(
         progressTracker.currentStep = TX_SIGNING
         logger.info("Signing Transaction")
         builder.verify(serviceHub)
-        val ptx = serviceHub.signInitialTransaction(builder)
+        val ptx = serviceHub.signInitialTransaction(builder, inputState.owner.owningKey)
 
         progressTracker.currentStep = COLLECTING_SIGNATURES
         logger.info("Collecting signatures from other parties")
