@@ -1,11 +1,11 @@
 package com.cp.flows
 
 import co.paralleluniverse.fibers.Suspendable
+import com.cp.contracts.CommercialPaperContract
+import com.cp.states.CommercialPaper
 import com.r3.corda.lib.accounts.workflows.accountService
 import com.r3.corda.lib.accounts.workflows.flows.RequestAccountInfo
 import com.r3.corda.lib.accounts.workflows.flows.RequestKeyForAccount
-import com.cp.contracts.CommercialPaperContract
-import com.cp.states.CommercialPaper
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.TimeWindow
@@ -57,15 +57,16 @@ class IssueCommercialPaperFlow(
                 ?: subFlow(RequestAccountInfo(accountIdentifier, investor))
                 ?: throw FlowException("Couldn't find account information for $accountIdentifier")
 
-        val owner = subFlow(RequestKeyForAccount(accountInfo))
+        val account = subFlow(RequestKeyForAccount(accountInfo))
 
         progressTracker.currentStep = IDENTIFYING_NOTARY
         val notary = serviceHub.networkMapCache.notaryIdentities.first()
         val commercialPaper = CommercialPaper(
-                ourIdentity,
-                owner,
-                faceValue,
-                maturityDate()
+                faceValue = faceValue,
+                maturityDate = maturityDate(),
+                issuer = ourIdentity,
+                account = account,
+                owner = investor
         )
         val command = Command(CommercialPaperContract.Commands.Issue(), listOf(ourIdentity.owningKey))
 

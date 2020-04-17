@@ -58,28 +58,29 @@ class TransferCommercialPaperFlow(
 
         progressTracker.currentStep = RETRIEVE_COMMERCIAL_PAPER
         val queryCriteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(commercialPaperIdentifier))
-        val commercialPaperStateAndRef = serviceHub.vaultService.queryBy<CommercialPaper>(queryCriteria).states.single()
+        val commercialPaperStateAndRef = serviceHub.vaultService.queryBy<CommercialPaper>(queryCriteria).states.singleOrNull()
+                ?: throw IllegalArgumentException("Commercial Paper does not exists for $commercialPaperIdentifier")
+
         val inputState = commercialPaperStateAndRef.state.data
 
         progressTracker.currentStep = RETRIEVE_ACCOUNT_INFO
         val fromAccount = accountService.accountInfo(fromIdentifier)?.state?.data
-                ?: subFlow(RequestAccountInfo(fromIdentifier, investor))
                 ?: throw FlowException("Couldn't find account information for $fromIdentifier")
 
-        val accountIdentifier: UUID = accountService.accountIdForKey(inputState.owner.owningKey)
+        val accountIdentifier: UUID = accountService.accountIdForKey(inputState.account.owningKey)
                 ?: throw FlowException("Couldn't find account information available in the Commercial Paper")
 
         logger.info("Account Identifier: {}, State: {}", fromAccount.linearId.id, accountIdentifier)
-        "Commercial Paper transfer can only be initiated by Owner" using (accountIdentifier.compareTo(fromAccount.linearId.id) == 0)
+        "Commercial Paper transfer can only be initiated by Account" using (accountIdentifier.compareTo(fromAccount.linearId.id) == 0)
 
         logger.info("Account's Hosting Node: {}, Our Identity: {}", fromAccount.host, ourIdentity)
-        "Commercial Paper transfer can only be initiated by Account's hosting node" using (ourIdentity.name == fromAccount.host.name)
+        "Commercial Paper transfer can only be initiated by Account's hosting node" using (ourIdentity.name == inputState.owner.name)
 
         val toAccount = accountService.accountInfo(toIdentifier)?.state?.data
                 ?: subFlow(RequestAccountInfo(toIdentifier, investor))
                 ?: throw FlowException("Couldn't find account information for $toIdentifier")
 
-        val newOwner = subFlow(RequestKeyForAccount(toAccount))
+        val newAccount = subFlow(RequestKeyForAccount(toAccount))
 
         progressTracker.currentStep = IDENTIFYING_NOTARY
         logger.info("Identifying notary service...")
@@ -88,8 +89,9 @@ class TransferCommercialPaperFlow(
         progressTracker.currentStep = TX_BUILDING
         logger.info("Building transaction")
         val builder = TransactionBuilder(notary = notary)
-        val outputState = inputState.withNewOwner(newOwner = newOwner)
-        val command = Command(CommercialPaperContract.Commands.Transfer(), listOf(ourIdentity.owningKey, inputState.owner.owningKey))
+        val outputState = inputState.withNewOwner(newAccount = newAccount, newOwner = investor)
+        val command = Command(CommercialPaperContract.Commands.Transfer(),
+                listOf(inputState.issuer.owningKey, inputState.owner.owningKey))
 
         builder.withItems(commercialPaperStateAndRef,
                 StateAndContract(outputState, CommercialPaperContract.ID),
@@ -100,13 +102,7 @@ class TransferCommercialPaperFlow(
         builder.verify(serviceHub)
         val ptx = serviceHub.signInitialTransaction(builder)
 
-        val sessions = mutableSetOf(initiateFlow(inputState.issuer))
-
-        logger.info("Investor Key: {}, Our Identity Key: {}", investor.owningKey, ourIdentity.owningKey)
-        if (investor.owningKey != ourIdentity.owningKey) {
-            logger.info("Owning key does not match")
-            // sessions.add(initiateFlow(investor))
-        }
+        val sessions = mutableSetOf(initiateFlow(inputState.issuer), initiateFlow(inputState.owner))
 
         val stx = subFlow(CollectSignaturesFlow(ptx, sessions))
 

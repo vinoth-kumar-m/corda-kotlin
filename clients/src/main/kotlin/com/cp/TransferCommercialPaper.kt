@@ -1,11 +1,13 @@
 package com.cp
 
+import com.cp.flows.QueryCommercialPaperByAccountName
 import com.cp.flows.TransferCommercialPaperFlow
 import net.corda.client.rpc.CordaRPCClient
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.messaging.startFlow
 import net.corda.core.utilities.NetworkHostAndPort
+import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
 import java.util.*
 
@@ -30,15 +32,15 @@ private class TransferCommercialPaper {
         val client = CordaRPCClient(NetworkHostAndPort(nodeAddress, port))
         val rpcOps = client.start(rpcUsername, rpcPassword).proxy
 
-        val fromAccount = UUID.fromString("f5a809fb-3727-4fe3-a2c9-5b0c890360df")
+        val fromAccount = UUID.fromString("7fa7b893-ed35-4bc8-a175-e3a71ceab536")
                 ?: throw Exception("Couldn't generate UUID from String")
 
-        val toAccount = UUID.fromString("6322fc00-dbad-4a9b-8f5f-4fbd5d49d1e0")
+        val toAccount = UUID.fromString("13560ac1-e2c7-4e24-8aa3-a5c2a54a7ff0")
                 ?: throw Exception("Couldn't generate UUID from String")
 
         logger.debug("From Account: {}, To Account: {}", fromAccount, toAccount)
 
-        val linearId = UniqueIdentifier(externalId = null, id = UUID.fromString("0ba9de64-dcff-4f3e-ad39-ac245adc0c1f"))
+        val linearId = UniqueIdentifier(externalId = null, id = UUID.fromString("bedb0399-2562-4228-ac49-db172f463c45"))
         logger.info("Transfer Commercial Paper: {}", linearId)
 
         val investor = rpcOps.wellKnownPartyFromX500Name(CordaX500Name("Investor", "New York", "US"))
@@ -47,6 +49,10 @@ private class TransferCommercialPaper {
 
         rpcOps.startFlow(::TransferCommercialPaperFlow, linearId, fromAccount, toAccount, investor)
 
+        val commercialPapers = rpcOps.startFlow(::QueryCommercialPaperByAccountName, "karthigadevi").returnValue.getOrThrow()
+        commercialPapers.forEach {
+            println(it)
+        }
 
         logger.info("Flow completed successfully")
 
