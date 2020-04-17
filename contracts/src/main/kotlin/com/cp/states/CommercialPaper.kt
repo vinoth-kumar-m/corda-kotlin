@@ -20,19 +20,19 @@ import java.util.*
 data class CommercialPaper(val faceValue: Amount<Currency>,
                            val maturityDate: Instant,
                            val issuer: Party,
-                           val account: AbstractParty,
-                           val owner: Party,
+                           val owner: AbstractParty,
+                           val investor: Party,
                            val status: String = "Active",
                            override val linearId: UniqueIdentifier = UniqueIdentifier()) : LinearState {
 
-    override val participants: List<AbstractParty> get() = listOf(issuer, owner)
+    override val participants: List<AbstractParty> get() = listOf(issuer, investor)
 
-    fun withoutOwner() = copy(account = AnonymousParty(owningKey = NullKeys.NullPublicKey))
+    fun withoutOwner() = copy(owner = AnonymousParty(owningKey = NullKeys.NullPublicKey))
 
-    fun withNewOwner(newAccount: AbstractParty, newOwner: Party) = copy(account = newAccount, owner = newOwner)
+    fun withNewOwner(newOwner: AbstractParty, newInvestor: Party) = copy(owner = newOwner, investor = newInvestor)
 
     override fun toString(): String {
-        return "CommercialPaper(faceValue=$faceValue, maturityDate=$maturityDate, issuer=$issuer, account=$account, owner=$owner, status='$status', linearId=$linearId)"
+        return "CommercialPaper(faceValue=$faceValue, maturityDate=$maturityDate, issuer=$issuer, owner=$owner, investor=$investor, status='$status', linearId=$linearId)"
     }
 
 

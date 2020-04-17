@@ -35,7 +35,7 @@ class TransferCommercialPaperFlow(
         object IDENTIFYING_NOTARY : Step("Identifying notary service for the flow")
         object TX_BUILDING : Step("Building a transaction.")
         object TX_SIGNING : Step("Signing a transaction.")
-        object INITIATING_INVESTOR_FLOW : Step("Initiating Investor flow")
+        object COLLECTING_SIGNATURES : Step("Collecting signatures from other parties")
         object TX_FINALIZE : Step("Finalising a transaction.") {
             override fun childProgressTracker() = FinalityFlow.tracker()
         }
@@ -46,7 +46,7 @@ class TransferCommercialPaperFlow(
                 IDENTIFYING_NOTARY,
                 TX_BUILDING,
                 TX_SIGNING,
-                INITIATING_INVESTOR_FLOW,
+                COLLECTING_SIGNATURES,
                 TX_FINALIZE
         )
     }
@@ -67,14 +67,14 @@ class TransferCommercialPaperFlow(
         val fromAccount = accountService.accountInfo(fromIdentifier)?.state?.data
                 ?: throw FlowException("Couldn't find account information for $fromIdentifier")
 
-        val accountIdentifier: UUID = accountService.accountIdForKey(inputState.account.owningKey)
+        val accountIdentifier: UUID = accountService.accountIdForKey(inputState.owner.owningKey)
                 ?: throw FlowException("Couldn't find account information available in the Commercial Paper")
 
         logger.info("Account Identifier: {}, State: {}", fromAccount.linearId.id, accountIdentifier)
         "Commercial Paper transfer can only be initiated by Account" using (accountIdentifier.compareTo(fromAccount.linearId.id) == 0)
 
-        logger.info("Account's Hosting Node: {}, Our Identity: {}", fromAccount.host, ourIdentity)
-        "Commercial Paper transfer can only be initiated by Account's hosting node" using (ourIdentity.name == inputState.owner.name)
+        logger.info("Account's Hosting Node: {}, Our Identity: {}", inputState.investor.name, ourIdentity.name)
+        "Commercial Paper transfer can only be initiated by Account's hosting node" using (ourIdentity.name == inputState.investor.name)
 
         val toAccount = accountService.accountInfo(toIdentifier)?.state?.data
                 ?: subFlow(RequestAccountInfo(toIdentifier, investor))
@@ -89,9 +89,9 @@ class TransferCommercialPaperFlow(
         progressTracker.currentStep = TX_BUILDING
         logger.info("Building transaction")
         val builder = TransactionBuilder(notary = notary)
-        val outputState = inputState.withNewOwner(newAccount = newAccount, newOwner = investor)
+        val outputState = inputState.withNewOwner(newOwner = newAccount, newInvestor = investor)
         val command = Command(CommercialPaperContract.Commands.Transfer(),
-                listOf(inputState.issuer.owningKey, inputState.owner.owningKey))
+                listOf(inputState.issuer.owningKey, inputState.investor.owningKey))
 
         builder.withItems(commercialPaperStateAndRef,
                 StateAndContract(outputState, CommercialPaperContract.ID),
@@ -102,8 +102,9 @@ class TransferCommercialPaperFlow(
         builder.verify(serviceHub)
         val ptx = serviceHub.signInitialTransaction(builder)
 
-        val sessions = mutableSetOf(initiateFlow(inputState.issuer), initiateFlow(inputState.owner))
-
+        progressTracker.currentStep = COLLECTING_SIGNATURES
+        logger.info("Collecting signatures from other parties")
+        val sessions = mutableSetOf(initiateFlow(inputState.issuer), initiateFlow(inputState.investor))
         val stx = subFlow(CollectSignaturesFlow(ptx, sessions))
 
         progressTracker.currentStep = TX_FINALIZE

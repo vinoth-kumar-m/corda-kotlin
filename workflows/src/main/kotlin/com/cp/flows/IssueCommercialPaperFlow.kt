@@ -65,8 +65,8 @@ class IssueCommercialPaperFlow(
                 faceValue = faceValue,
                 maturityDate = maturityDate(),
                 issuer = ourIdentity,
-                account = account,
-                owner = investor
+                owner = account,
+                investor = investor
         )
         val command = Command(CommercialPaperContract.Commands.Issue(), listOf(ourIdentity.owningKey))
 
