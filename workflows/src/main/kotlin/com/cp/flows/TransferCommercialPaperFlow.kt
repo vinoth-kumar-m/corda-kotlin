@@ -104,7 +104,13 @@ class TransferCommercialPaperFlow(
 
         progressTracker.currentStep = COLLECTING_SIGNATURES
         logger.info("Collecting signatures from other parties")
-        val sessions = mutableSetOf(initiateFlow(inputState.issuer), initiateFlow(inputState.investor))
+        val issuerSession = initiateFlow(inputState.issuer)
+        logger.info("Issuer Session: {}", issuerSession)
+
+        val investorSession = initiateFlow(inputState.investor)
+        logger.info("Investor Session: {}", investorSession)
+
+        val sessions = mutableSetOf(issuerSession, investorSession)
         val stx = subFlow(CollectSignaturesFlow(ptx, sessions))
 
         progressTracker.currentStep = TX_FINALIZE
