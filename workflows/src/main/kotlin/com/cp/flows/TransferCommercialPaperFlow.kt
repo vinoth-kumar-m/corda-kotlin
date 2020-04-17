@@ -98,7 +98,8 @@ class TransferCommercialPaperFlow(
                 command)
 
         progressTracker.currentStep = TX_SIGNING
-        logger.info("Signing Transaction")
+        logger.info("Signing Transaction. Signers - Account: {}, Investor: {}, Issuer: {}",
+                inputState.owner.owningKey, inputState.investor.owningKey, inputState.issuer.owningKey)
         builder.verify(serviceHub)
         val ptx = serviceHub.signInitialTransaction(builder)
 
