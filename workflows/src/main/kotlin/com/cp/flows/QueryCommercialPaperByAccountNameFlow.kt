@@ -1,21 +1,21 @@
 package com.cp.flows
 
-import com.r3.corda.lib.accounts.workflows.accountService
 import com.cp.states.CommercialPaper
+import com.r3.corda.lib.accounts.workflows.accountService
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.StartableByRPC
 import net.corda.core.flows.StartableByService
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.utilities.ProgressTracker
-import net.corda.core.utilities.ProgressTracker.*
+import net.corda.core.utilities.ProgressTracker.Step
 import org.bouncycastle.asn1.x500.style.RFC4519Style.name
-import java.lang.IllegalArgumentException
 
 @StartableByRPC
 @StartableByService
 @InitiatingFlow
-class QueryCommercialPaperByAccountName(
+class QueryCommercialPaperByAccountName
+(
        private val name: String
 ): FlowLogic<List<CommercialPaper>>() {
 

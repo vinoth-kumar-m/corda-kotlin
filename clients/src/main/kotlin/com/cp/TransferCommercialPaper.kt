@@ -1,13 +1,12 @@
 package com.cp
 
-import com.cp.flows.QueryCommercialPaperByAccountName
 import com.cp.flows.TransferCommercialPaperFlow
+import com.cp.states.CommercialPaper
 import net.corda.client.rpc.CordaRPCClient
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.messaging.startFlow
 import net.corda.core.utilities.NetworkHostAndPort
-import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
 import java.util.*
 
@@ -49,8 +48,7 @@ private class TransferCommercialPaper {
 
         rpcOps.startFlow(::TransferCommercialPaperFlow, linearId, fromAccount, toAccount, investor)
 
-        val commercialPapers = rpcOps.startFlow(::QueryCommercialPaperByAccountName, "karthigadevi").returnValue.getOrThrow()
-        commercialPapers.forEach {
+        rpcOps.vaultQuery(CommercialPaper::class.java).states.map { it -> it.state.data }.forEach {
             println(it)
         }
 
