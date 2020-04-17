@@ -32,7 +32,7 @@ private class IssueCommercialPaper {
         val client = CordaRPCClient(NetworkHostAndPort(nodeAddress, port))
         val rpcOps = client.start(rpcUsername, rpcPassword).proxy
 
-        val identifier = UUID.fromString("d8de14f4-bd9d-41e3-a754-148ee0be9b19")
+        val identifier = UUID.fromString("85d80bc9-0f97-4e1d-843c-b1e2d1f24551")
                 ?: throw Exception("Couldn't generate UUID from String")
         logger.debug("Identifier: {}", identifier)
 

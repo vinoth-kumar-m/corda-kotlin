@@ -91,7 +91,7 @@ class TransferCommercialPaperFlow(
         val builder = TransactionBuilder(notary = notary)
         val outputState = inputState.withNewOwner(newOwner = newAccount, newInvestor = investor)
         val command = Command(CommercialPaperContract.Commands.Transfer(),
-                listOf(ourIdentity.owningKey))
+                listOf(ourIdentity.owningKey, inputState.issuer.owningKey))
 
         builder.withItems(commercialPaperStateAndRef,
                 StateAndContract(outputState, CommercialPaperContract.ID),
@@ -101,7 +101,7 @@ class TransferCommercialPaperFlow(
         logger.info("Signing Transaction. Signers - Account: {}, Investor: {}, Issuer: {}",
                 inputState.owner.owningKey.toString(), inputState.investor.owningKey.toString(), inputState.issuer.owningKey.toString())
         builder.verify(serviceHub)
-        val ptx = serviceHub.signInitialTransaction(builder)
+        val ptx = serviceHub.signInitialTransaction(builder, listOf(ourIdentity.owningKey, inputState.owner.owningKey))
 
         progressTracker.currentStep = COLLECTING_SIGNATURES
         logger.info("Collecting signatures from other parties")
@@ -109,11 +109,11 @@ class TransferCommercialPaperFlow(
         val issuerSession = initiateFlow(inputState.issuer)
         logger.info("Issuer Session: {}", issuerSession)
 
-        // val stx = subFlow(CollectSignaturesFlow(ptx, setOf(issuerSession)))
+        val stx = subFlow(CollectSignaturesFlow(ptx, setOf(issuerSession)))
 
         progressTracker.currentStep = TX_FINALIZE
         logger.info("Finalizing flow")
-        return subFlow(FinalityFlow(ptx, issuerSession))
+        return subFlow(FinalityFlow(stx, issuerSession))
     }
 }
 
@@ -123,13 +123,13 @@ class TransferCommercialPaperResponderFlow(private val issuerSession: FlowSessio
     @Suspendable
     override fun call(): SignedTransaction {
 
-        /*val signedTransaction = object : SignTransactionFlow(issuerSession) {
+        val signedTransaction = object : SignTransactionFlow(issuerSession) {
             override fun checkTransaction(stx: SignedTransaction) {
                 val outputState = stx.tx.outputs.single().data
                 logger.info("Transfer Responder Flow - Output State:{}", outputState)
                 "This must be a Commercial Paper Transaction" using (outputState is CommercialPaper)
             }
-        }*/
+        }
 
         return subFlow(ReceiveFinalityFlow(issuerSession))
     }
