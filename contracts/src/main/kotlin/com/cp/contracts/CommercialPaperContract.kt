@@ -25,12 +25,22 @@ class CommercialPaperContract : Contract {
         for((inputs, outputs, _) in groups)
         when(command.value) {
             is Commands.Issue -> {
-                val output = outputs.single()
+                val outputState = outputs.single()
                 val time = timeWindow?.fromTime ?: throw IllegalArgumentException("Issuance must be timestamped")
                 requireThat {
-                    "No input states required to issue a commercial paper" using (inputs.isEmpty())
-                    "Maturity date should be in future" using(output.maturityDate > time)
-                    "Face value should be greater than zero" using(output.faceValue.quantity > 0)
+                    "No inputs should be consumed while issuing a commercial paper" using (inputs.isEmpty())
+                    "Maturity date should be in future" using (outputState.maturityDate > time)
+                    "Face value should be greater than zero" using (outputState.faceValue.quantity > 0)
+                }
+            }
+            is Commands.Transfer -> {
+                val inputState = inputs.single()
+                val outputState = outputs.single()
+                val time = timeWindow?.fromTime ?: throw IllegalArgumentException("Transfer must be timestamped")
+                requireThat {
+                    "Maturity date should be in future" using (outputState.maturityDate > time)
+                    "Face value should be greater than zero" using (outputState.faceValue.quantity > 0)
+                    "Only 'Active' Commercial Paper can be transferred" using (inputState.status == "Active")
                 }
             }
         }

@@ -6,11 +6,8 @@ import com.cp.states.CommercialPaper
 import com.r3.corda.lib.accounts.workflows.accountService
 import com.r3.corda.lib.accounts.workflows.flows.RequestAccountInfo
 import com.r3.corda.lib.accounts.workflows.flows.RequestKeyForAccount
-import net.corda.core.contracts.Command
+import net.corda.core.contracts.*
 import net.corda.core.contracts.Requirements.using
-import net.corda.core.contracts.StateAndContract
-import net.corda.core.contracts.UniqueIdentifier
-import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
@@ -19,6 +16,7 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.ProgressTracker.Step
+import java.time.Instant
 import java.util.*
 
 @InitiatingFlow
@@ -33,6 +31,7 @@ class TransferCommercialPaperFlow(
     companion object {
         object RETRIEVE_COMMERCIAL_PAPER : Step("Retrieving Commercial Paper using Linear ID")
         object RETRIEVE_ACCOUNT_INFO : Step("Retrieving Account information from local node")
+        object SHARING_ACCOUNT_INFO : Step("Sharing Account information with Issuer")
         object IDENTIFYING_NOTARY : Step("Identifying notary service for the flow")
         object TX_BUILDING : Step("Building a transaction.")
         object TX_SIGNING : Step("Signing a transaction.")
@@ -44,6 +43,7 @@ class TransferCommercialPaperFlow(
         fun tracker() = ProgressTracker(
                 RETRIEVE_COMMERCIAL_PAPER,
                 RETRIEVE_ACCOUNT_INFO,
+                SHARING_ACCOUNT_INFO,
                 IDENTIFYING_NOTARY,
                 TX_BUILDING,
                 TX_SIGNING,
@@ -83,6 +83,10 @@ class TransferCommercialPaperFlow(
 
         val newAccount = subFlow(RequestKeyForAccount(toAccount))
 
+        progressTracker.currentStep = SHARING_ACCOUNT_INFO
+        logger.info("Sharing Account information with issuer")
+        accountService.shareAccountInfoWithParty(toIdentifier, inputState.issuer)
+
         progressTracker.currentStep = IDENTIFYING_NOTARY
         logger.info("Identifying notary service...")
         val notary = serviceHub.networkMapCache.notaryIdentities.first()
@@ -96,6 +100,7 @@ class TransferCommercialPaperFlow(
         builder.withItems(commercialPaperStateAndRef,
                 StateAndContract(outputState, CommercialPaperContract.ID),
                 command)
+                .setTimeWindow(TimeWindow.fromOnly(Instant.now()))
 
         progressTracker.currentStep = TX_SIGNING
         logger.info("Signing Transaction")
