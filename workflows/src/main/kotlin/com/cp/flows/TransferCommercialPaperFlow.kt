@@ -10,6 +10,7 @@ import net.corda.core.contracts.Command
 import net.corda.core.contracts.Requirements.using
 import net.corda.core.contracts.StateAndContract
 import net.corda.core.contracts.UniqueIdentifier
+import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
@@ -90,18 +91,16 @@ class TransferCommercialPaperFlow(
         logger.info("Building transaction")
         val builder = TransactionBuilder(notary = notary)
         val outputState = inputState.withNewOwner(newOwner = newAccount, newInvestor = investor)
-        val command = Command(CommercialPaperContract.Commands.Transfer(),
-                listOf(ourIdentity.owningKey, inputState.issuer.owningKey))
+        val command = Command(CommercialPaperContract.Commands.Transfer(), inputState.issuer.owningKey)
 
         builder.withItems(commercialPaperStateAndRef,
                 StateAndContract(outputState, CommercialPaperContract.ID),
                 command)
 
         progressTracker.currentStep = TX_SIGNING
-        logger.info("Signing Transaction. Signers - Account: {}, Investor: {}, Issuer: {}",
-                inputState.owner.owningKey.toString(), inputState.investor.owningKey.toString(), inputState.issuer.owningKey.toString())
+        logger.info("Signing Transaction")
         builder.verify(serviceHub)
-        val ptx = serviceHub.signInitialTransaction(builder, listOf(ourIdentity.owningKey, inputState.owner.owningKey))
+        val ptx = serviceHub.signInitialTransaction(builder)
 
         progressTracker.currentStep = COLLECTING_SIGNATURES
         logger.info("Collecting signatures from other parties")
@@ -123,13 +122,13 @@ class TransferCommercialPaperResponderFlow(private val issuerSession: FlowSessio
     @Suspendable
     override fun call(): SignedTransaction {
 
-        val signedTransaction = object : SignTransactionFlow(issuerSession) {
-            override fun checkTransaction(stx: SignedTransaction) {
+        subFlow(object : SignTransactionFlow(issuerSession) {
+            override fun checkTransaction(stx: SignedTransaction) = requireThat {
                 val outputState = stx.tx.outputs.single().data
                 logger.info("Transfer Responder Flow - Output State:{}", outputState)
                 "This must be a Commercial Paper Transaction" using (outputState is CommercialPaper)
             }
-        }
+        })
 
         return subFlow(ReceiveFinalityFlow(issuerSession))
     }

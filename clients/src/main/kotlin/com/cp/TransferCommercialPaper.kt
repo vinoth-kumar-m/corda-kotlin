@@ -31,15 +31,15 @@ private class TransferCommercialPaper {
         val client = CordaRPCClient(NetworkHostAndPort(nodeAddress, port))
         val rpcOps = client.start(rpcUsername, rpcPassword).proxy
 
-        val fromAccount = UUID.fromString("e0dca312-20b6-476d-bce2-d6be528a2d70")
+        val fromAccount = UUID.fromString("b763b8d4-8c25-4e71-889c-5b16cf0e2c8e")
                 ?: throw Exception("Couldn't generate UUID from String")
 
-        val toAccount = UUID.fromString("85d80bc9-0f97-4e1d-843c-b1e2d1f24551")
+        val toAccount = UUID.fromString("5159d5f8-7e73-495c-9658-f833e0fb2050")
                 ?: throw Exception("Couldn't generate UUID from String")
 
         logger.debug("From Account: {}, To Account: {}", fromAccount, toAccount)
 
-        val linearId = UniqueIdentifier(externalId = null, id = UUID.fromString("b7eb97fd-d41c-453c-a92e-ac442a085fcb"))
+        val linearId = UniqueIdentifier(externalId = null, id = UUID.fromString("9ec01bce-e309-4f95-9023-77610b9ee880"))
         logger.info("Transfer Commercial Paper: {}", linearId)
 
         val investor = rpcOps.wellKnownPartyFromX500Name(CordaX500Name("Investor", "New York", "US"))
