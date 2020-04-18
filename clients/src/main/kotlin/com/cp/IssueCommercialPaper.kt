@@ -1,12 +1,12 @@
 package com.cp
 
 import com.cp.flows.IssueCommercialPaperFlow
-import com.cp.states.CommercialPaper
 import net.corda.client.rpc.CordaRPCClient
 import net.corda.core.contracts.Amount
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.messaging.startFlow
 import net.corda.core.utilities.NetworkHostAndPort
+import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
 import java.math.BigDecimal
 import java.util.*
@@ -32,7 +32,7 @@ private class IssueCommercialPaper {
         val client = CordaRPCClient(NetworkHostAndPort(nodeAddress, port))
         val rpcOps = client.start(rpcUsername, rpcPassword).proxy
 
-        val identifier = UUID.fromString("d7190224-c982-4f3f-ba2d-2c818afa919f")
+        val identifier = UUID.fromString("c0a8022d-fa7c-4409-a55b-152fe798838a")
                 ?: throw Exception("Couldn't generate UUID from String")
         logger.debug("Identifier: {}", identifier)
 
@@ -41,11 +41,13 @@ private class IssueCommercialPaper {
         logger.debug("Investor: {}", investor)
 
         logger.info("Issuing commercial paper..")
-        rpcOps.startFlow(::IssueCommercialPaperFlow, Amount.fromDecimal(BigDecimal(500), Currency.getInstance(Locale.US)), identifier, investor)
+        val signedTransaction = rpcOps.startFlow(
+                ::IssueCommercialPaperFlow,
+                Amount.fromDecimal(BigDecimal(500), Currency.getInstance(Locale.US)),
+                identifier,
+                investor).returnValue.getOrThrow()
 
-        rpcOps.vaultQuery(CommercialPaper::class.java).states.map { it -> it.state.data }.forEach {
-            println(it)
-        }
+        logger.info("Commercial Paper Issued with Identifier: {}", signedTransaction.tx.outputs.single())
 
         logger.info("Flow completed successfully")
 

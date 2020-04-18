@@ -4,12 +4,9 @@ import co.paralleluniverse.fibers.Suspendable
 import com.cp.contracts.CommercialPaperContract
 import com.cp.states.CommercialPaper
 import com.r3.corda.lib.accounts.workflows.accountService
-import com.r3.corda.lib.accounts.workflows.flows.RequestAccountInfo
-import com.r3.corda.lib.accounts.workflows.flows.RequestKeyForAccount
 import net.corda.core.contracts.*
 import net.corda.core.contracts.Requirements.using
 import net.corda.core.flows.*
-import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.transactions.SignedTransaction
@@ -21,11 +18,9 @@ import java.util.*
 
 @InitiatingFlow
 @StartableByRPC
-class TransferCommercialPaperFlow(
+class RedeemCommercialPaperFlow(
         private val commercialPaperIdentifier: UniqueIdentifier,
-        private val fromIdentifier: UUID,
-        private val toIdentifier: UUID,
-        private val investor: Party
+        private val fromIdentifier: UUID
 ) : FlowLogic<SignedTransaction>() {
 
     companion object {
@@ -72,20 +67,10 @@ class TransferCommercialPaperFlow(
                 ?: throw FlowException("Couldn't find account information available in the Commercial Paper")
 
         logger.info("Account Identifier: {}, State: {}", fromAccount.linearId.id, accountIdentifier)
-        "Commercial Paper transfer can only be initiated by Account" using (accountIdentifier.compareTo(fromAccount.linearId.id) == 0)
+        "Commercial Paper redeem can only be initiated by Account" using (accountIdentifier.compareTo(fromAccount.linearId.id) == 0)
 
         logger.info("Account's Hosting Node: {}, Our Identity: {}", inputState.investor.name, ourIdentity.name)
-        "Commercial Paper transfer can only be initiated by Account's hosting node" using (ourIdentity.name == inputState.investor.name)
-
-        val toAccount = accountService.accountInfo(toIdentifier)?.state?.data
-                ?: subFlow(RequestAccountInfo(toIdentifier, investor))
-                ?: throw FlowException("Couldn't find account information for $toIdentifier")
-
-        val newAccount = subFlow(RequestKeyForAccount(toAccount))
-
-        /*progressTracker.currentStep = SHARING_ACCOUNT_INFO
-        logger.info("Sharing Account information with issuer")
-        accountService.shareAccountInfoWithParty(toIdentifier, inputState.issuer)*/
+        "Commercial Paper redeem can only be initiated by Account's hosting node" using (ourIdentity.name == inputState.investor.name)
 
         progressTracker.currentStep = IDENTIFYING_NOTARY
         logger.info("Identifying notary service...")
@@ -94,8 +79,8 @@ class TransferCommercialPaperFlow(
         progressTracker.currentStep = TX_BUILDING
         logger.info("Building transaction")
         val builder = TransactionBuilder(notary = notary)
-        val outputState = inputState.withNewOwner(newOwner = newAccount, newInvestor = investor)
-        val command = Command(CommercialPaperContract.Commands.Transfer(), listOf(inputState.owner.owningKey, inputState.issuer.owningKey))
+        val outputState = inputState.redeemed()
+        val command = Command(CommercialPaperContract.Commands.Redeem(), listOf(inputState.owner.owningKey, inputState.issuer.owningKey))
 
         builder.withItems(commercialPaperStateAndRef,
                 StateAndContract(outputState, CommercialPaperContract.ID),
@@ -122,15 +107,15 @@ class TransferCommercialPaperFlow(
 }
 
 // Commercial Paper Responder Flow
-@InitiatedBy(TransferCommercialPaperFlow::class)
-class TransferCommercialPaperResponderFlow(private val issuerSession: FlowSession) : FlowLogic<SignedTransaction>() {
+@InitiatedBy(RedeemCommercialPaperFlow::class)
+class RedeemCommercialPaperResponderFlow(private val issuerSession: FlowSession) : FlowLogic<SignedTransaction>() {
     @Suspendable
     override fun call(): SignedTransaction {
 
         subFlow(object : SignTransactionFlow(issuerSession) {
             override fun checkTransaction(stx: SignedTransaction) = requireThat {
                 val outputState = stx.tx.outputs.single().data
-                logger.info("Transfer Responder Flow - Output State:{}", outputState)
+                logger.info("Redeem Responder Flow - Output State:{}", outputState)
                 "This must be a Commercial Paper Transaction" using (outputState is CommercialPaper)
             }
         })

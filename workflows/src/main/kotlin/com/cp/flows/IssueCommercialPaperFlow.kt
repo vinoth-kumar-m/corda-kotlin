@@ -11,6 +11,7 @@ import net.corda.core.contracts.Command
 import net.corda.core.contracts.TimeWindow
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
+import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.ProgressTracker.Step
@@ -25,7 +26,7 @@ class IssueCommercialPaperFlow(
         private val faceValue: Amount<Currency>,
         private val accountIdentifier: UUID,
         private val investor: Party
-) : FlowLogic<Unit>() {
+) : FlowLogic<SignedTransaction>() {
 
     companion object {
         object RETRIEVE_ACCOUNT_INFO: Step("Retrieving Account information from local node")
@@ -50,7 +51,7 @@ class IssueCommercialPaperFlow(
     override val progressTracker = tracker()
 
     @Suspendable
-    override fun call() {
+    override fun call(): SignedTransaction {
 
         progressTracker.currentStep= RETRIEVE_ACCOUNT_INFO
         val accountInfo = accountService.accountInfo(accountIdentifier)?.state?.data
@@ -84,7 +85,7 @@ class IssueCommercialPaperFlow(
         val investorSession = initiateFlow(investor)
 
         progressTracker.currentStep = TX_FINALIZE
-        subFlow(FinalityFlow(signedTx, investorSession))
+        return subFlow(FinalityFlow(signedTx, investorSession))
     }
 
     private fun maturityDate(): Instant = LocalDate.of(2020, 12, 31).atStartOfDay(ZoneId.systemDefault()).toInstant()
