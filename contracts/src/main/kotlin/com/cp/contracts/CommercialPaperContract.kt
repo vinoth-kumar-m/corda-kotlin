@@ -46,7 +46,7 @@ class CommercialPaperContract : Contract {
             is Commands.Redeem -> {
                 val inputState = inputs.single()
                 val outputState = outputs.single()
-                val time = timeWindow?.fromTime ?: throw IllegalArgumentException("Redeen must be timestamped")
+                val time = timeWindow?.fromTime ?: throw IllegalArgumentException("Redeem must be timestamped")
                 requireThat {
                     "Maturity date should be in future" using (outputState.maturityDate < time)
                     "Face value should be greater than zero" using (outputState.faceValue.quantity > 0)
