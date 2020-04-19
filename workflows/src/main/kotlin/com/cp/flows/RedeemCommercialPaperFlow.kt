@@ -87,7 +87,7 @@ class RedeemCommercialPaperFlow(
         builder.withItems(commercialPaperStateAndRef,
                 StateAndContract(outputState, CommercialPaperContract.ID),
                 command)
-                .setTimeWindow(TimeWindow.fromOnly(redeemDate()))
+                .setTimeWindow(TimeWindow.fromOnly(Instant.now()))
 
         progressTracker.currentStep = TX_SIGNING
         logger.info("Signing Transaction")
