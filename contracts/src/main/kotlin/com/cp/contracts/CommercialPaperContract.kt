@@ -20,43 +20,41 @@ class CommercialPaperContract : Contract {
     // does not throw an exception.
     override fun verify(tx: LedgerTransaction) {
         // Verification logic goes here.
-        val groups = tx.groupStates(CommercialPaper::withoutOwner)
-        val command= tx.commands.requireSingleCommand<Commands>()
+        val inputs = tx.inputStates as List<CommercialPaper>
+        val outputs = tx.outputStates as List<CommercialPaper>
+        val command = tx.commands.requireSingleCommand<Commands>()
         val timeWindow = tx.timeWindow
 
-        logger.info("Before Grouping - Inputs: {}, Outputs: {}, Command: {}", tx.inputStates.size, tx.outputStates.size, command.value)
-        for((inputs, outputs, _) in groups) {
-            logger.info("After Grouping - Inputs: {}, Outputs: {}, Command: {}", inputs.size, outputs.size, command.value )
-            when (command.value) {
-                is Commands.Issue -> {
-                    val outputState = outputs.single()
-                    val time = timeWindow?.fromTime ?: throw IllegalArgumentException("Issuance must be timestamped")
-                    requireThat {
-                        "No inputs should be consumed while issuing a commercial paper" using (inputs.isEmpty())
-                        "Maturity date should be in future" using (outputState.maturityDate > time)
-                        "Face value should be greater than zero" using (outputState.faceValue.quantity > 0)
-                    }
+        logger.info("After Grouping - Inputs: {}, Outputs: {}, Command: {}", inputs.size, outputs.size, command.value)
+        when (command.value) {
+            is Commands.Issue -> {
+                val outputState = outputs.single()
+                val time = timeWindow?.fromTime ?: throw IllegalArgumentException("Issuance must be timestamped")
+                requireThat {
+                    "No inputs should be consumed while issuing a commercial paper" using (inputs.isEmpty())
+                    "Maturity date should be in future" using (outputState.maturityDate > time)
+                    "Face value should be greater than zero" using (outputState.faceValue.quantity > 0)
                 }
-                is Commands.Transfer -> {
-                    val inputState = inputs.single()
-                    val outputState = outputs.single()
-                    val time = timeWindow?.fromTime ?: throw IllegalArgumentException("Transfer must be timestamped")
-                    requireThat {
-                        "Maturity date should be in future" using (outputState.maturityDate > time)
-                        "Face value should be greater than zero" using (outputState.faceValue.quantity > 0)
-                        "Only 'Active' Commercial Paper can be transferred" using (inputState.status == "Active")
-                    }
+            }
+            is Commands.Transfer -> {
+                val inputState = inputs.single()
+                val outputState = outputs.single()
+                val time = timeWindow?.fromTime ?: throw IllegalArgumentException("Transfer must be timestamped")
+                requireThat {
+                    "Maturity date should be in future" using (outputState.maturityDate > time)
+                    "Face value should be greater than zero" using (outputState.faceValue.quantity > 0)
+                    "Only 'Active' Commercial Paper can be transferred" using (inputState.status == "Active")
                 }
-                is Commands.Redeem -> {
-                    val inputState = inputs.single()
-                    val outputState = outputs.single()
-                    val time = timeWindow?.fromTime ?: throw IllegalArgumentException("Redeem must be timestamped")
-                    requireThat {
-                        "Maturity date should be in future" using (outputState.maturityDate < time)
-                        "Face value should be greater than zero" using (outputState.faceValue.quantity > 0)
-                        "Only 'Active' Commercial Paper can be redeemed" using (inputState.status == "Active")
-                        "Commercial Paper status should be 'Redeemed'" using (outputState.status == "Redeemed")
-                    }
+            }
+            is Commands.Redeem -> {
+                val inputState = inputs.single()
+                val outputState = outputs.single()
+                val time = timeWindow?.fromTime ?: throw IllegalArgumentException("Redeem must be timestamped")
+                requireThat {
+                    "Maturity date should be in future" using (outputState.maturityDate < time)
+                    "Face value should be greater than zero" using (outputState.faceValue.quantity > 0)
+                    "Only 'Active' Commercial Paper can be redeemed" using (inputState.status == "Active")
+                    "Commercial Paper status should be 'Redeemed'" using (outputState.status == "Redeemed")
                 }
             }
         }
@@ -64,8 +62,8 @@ class CommercialPaperContract : Contract {
 
     // Used to indicate the transaction's intent.
     interface Commands : CommandData {
-        class Issue: TypeOnlyCommandData(), Commands
-        class Transfer: TypeOnlyCommandData(), Commands
-        class Redeem: TypeOnlyCommandData(), Commands
+        class Issue : TypeOnlyCommandData(), Commands
+        class Transfer : TypeOnlyCommandData(), Commands
+        class Redeem : TypeOnlyCommandData(), Commands
     }
 }
