@@ -24,8 +24,9 @@ class CommercialPaperContract : Contract {
         val command= tx.commands.requireSingleCommand<Commands>()
         val timeWindow = tx.timeWindow
 
+        logger.info("Before Grouping - Inputs: {}, Outputs: {}, Command: {}", tx.inputStates.size, tx.outputStates.size, command.value)
         for((inputs, outputs, _) in groups) {
-            logger.info("Inputs: {}, Outputs: {}, Command: {}", inputs.size, outputs.size, command.value )
+            logger.info("After Grouping - Inputs: {}, Outputs: {}, Command: {}", inputs.size, outputs.size, command.value )
             when (command.value) {
                 is Commands.Issue -> {
                     val outputState = outputs.single()
