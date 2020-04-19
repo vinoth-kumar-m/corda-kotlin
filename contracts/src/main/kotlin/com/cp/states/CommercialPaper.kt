@@ -31,7 +31,7 @@ data class CommercialPaper(val faceValue: Amount<Currency>,
 
     fun withNewOwner(newOwner: AbstractParty, newInvestor: Party) = copy(owner = newOwner, investor = newInvestor)
 
-    fun redeemed() = copy(status = "Redeemed")
+    fun redeemed() = copy(owner = this.issuer, status = "Redeemed")
 
     override fun toString(): String {
         return "CommercialPaper(faceValue=$faceValue, maturityDate=$maturityDate, issuer=$issuer, owner=$owner, investor=$investor, status='$status', linearId=$linearId)"

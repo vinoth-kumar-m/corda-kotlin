@@ -31,12 +31,12 @@ private class RedeemCommercialPaper {
         val client = CordaRPCClient(NetworkHostAndPort(nodeAddress, port))
         val rpcOps = client.start(rpcUsername, rpcPassword).proxy
 
-        val fromAccount = UUID.fromString("e4188e6a-425e-4841-a134-041e70b835b9")
+        val fromAccount = UUID.fromString("ec761a14-1d63-42e8-a566-2645830b7913")
                 ?: throw Exception("Couldn't generate UUID from String")
 
         logger.debug("From Account: {}", fromAccount)
 
-        val linearId = UniqueIdentifier(externalId = null, id = UUID.fromString("dc379c63-2ae1-47e0-a905-0b4c9be8c54f"))
+        val linearId = UniqueIdentifier(externalId = null, id = UUID.fromString("e58d17d4-bc84-4699-a851-d1a06a06681d"))
         logger.info("Redeem Commercial Paper: {}", linearId)
 
         val investor = rpcOps.wellKnownPartyFromX500Name(CordaX500Name("Investor", "New York", "US"))

@@ -14,6 +14,8 @@ import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 import net.corda.core.utilities.ProgressTracker.Step
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.*
 
 @InitiatingFlow
@@ -85,7 +87,7 @@ class RedeemCommercialPaperFlow(
         builder.withItems(commercialPaperStateAndRef,
                 StateAndContract(outputState, CommercialPaperContract.ID),
                 command)
-                .setTimeWindow(TimeWindow.fromOnly(Instant.now()))
+                .setTimeWindow(TimeWindow.fromOnly(redeemDate()))
 
         progressTracker.currentStep = TX_SIGNING
         logger.info("Signing Transaction")
@@ -104,6 +106,8 @@ class RedeemCommercialPaperFlow(
         logger.info("Finalizing flow")
         return subFlow(FinalityFlow(stx, issuerSession))
     }
+
+    private fun redeemDate(): Instant = LocalDate.of(2021, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant()
 }
 
 // Commercial Paper Responder Flow
