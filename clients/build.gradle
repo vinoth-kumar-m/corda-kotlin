@@ -24,6 +24,9 @@ dependencies {
     compile "org.apache.logging.log4j:log4j-web:${log4j_version}"
     compile "org.slf4j:jul-to-slf4j:$slf4j_version"
 
+
+    implementation( "net.corda:corda-jackson:4.3")
+
     compile "$accounts_release_group:accounts-contracts:$accounts_release_version"
     compile "$accounts_release_group:accounts-workflows:$accounts_release_version"
     compile "$corda_release_group:corda-finance-contracts:$corda_release_version"
@@ -43,6 +46,6 @@ task runTemplateClient(type: JavaExec, dependsOn: assemble) {
 
 task runTemplateServer(type: JavaExec, dependsOn: assemble) {
     classpath = sourceSets.main.runtimeClasspath
-    main = 'com.template.webserver.ServerKt'
-    args '--server.port=10050', '--config.rpc.host=localhost', '--config.rpc.port=10006', '--config.rpc.username=user1', '--config.rpc.password=test'
+    main = 'com.cp.webserver.ServerKt'
+    args '--server.port=9090', '--config.rpc.host=3.83.214.30', '--config.rpc.port=10009', '--config.rpc.username=investor', '--config.rpc.password=investor'
 }

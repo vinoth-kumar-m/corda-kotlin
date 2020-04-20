@@ -4,6 +4,7 @@ import net.corda.client.rpc.CordaRPCClient
 import net.corda.client.rpc.CordaRPCConnection
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.utilities.NetworkHostAndPort
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
@@ -37,8 +38,13 @@ open class NodeRPCConnection(
     lateinit var proxy: CordaRPCOps
         private set
 
+    companion object {
+        private val logger = LoggerFactory.getLogger(NodeRPCConnection::class.java)
+    }
+
     @PostConstruct
     fun initialiseNodeRPCConnection() {
+            logger.info("Host: {}, rpcPort: {}, Username: {}, Password: {}", host, rpcPort, username, password)
             val rpcAddress = NetworkHostAndPort(host, rpcPort)
             val rpcClient = CordaRPCClient(rpcAddress)
             val rpcConnection = rpcClient.start(username, password)
