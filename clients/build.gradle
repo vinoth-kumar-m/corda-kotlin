@@ -44,8 +44,14 @@ task runTemplateClient(type: JavaExec, dependsOn: assemble) {
     args 'localhost:10006', 'user1', 'test'
 }
 
-task runTemplateServer(type: JavaExec, dependsOn: assemble) {
+task runServerAsInvestor(type: JavaExec, dependsOn: assemble) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'com.cp.webserver.ServerKt'
     args '--server.port=9090', '--config.rpc.host=3.83.214.30', '--config.rpc.port=10009', '--config.rpc.username=investor', '--config.rpc.password=investor'
+}
+
+task runServerAsIssuer(type: JavaExec, dependsOn: assemble) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'com.cp.webserver.ServerKt'
+    args '--server.port=9091', '--config.rpc.host=3.83.214.30', '--config.rpc.port=10006', '--config.rpc.username=issuer', '--config.rpc.password=issuer'
 }
