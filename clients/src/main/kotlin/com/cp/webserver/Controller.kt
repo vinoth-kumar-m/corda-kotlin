@@ -95,7 +95,7 @@ class Controller(private val service: Service) {
     }
 
     @GetMapping(value = ["/all"], produces = ["application/json"])
-    private fun allCommercialPapers(@RequestParam identifier: String, @RequestParam fromAccount: String): ResponseEntity<List<CommercialPaper>> {
+    private fun allCommercialPapers(): ResponseEntity<List<CommercialPaper>> {
         logger.info("Retrieving all commercial papers")
         try {
             val commercialPapers = service.allCommercialPapers()
