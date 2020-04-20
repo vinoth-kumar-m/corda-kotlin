@@ -38,20 +38,14 @@ springBoot {
     mainClassName = "com.template.webserver.ServerKt"
 }
 
-task runTemplateClient(type: JavaExec, dependsOn: assemble) {
-    classpath = sourceSets.main.runtimeClasspath
-    main = 'com.template.ClientKt'
-    args 'localhost:10006', 'user1', 'test'
-}
-
-task runServerAsInvestor(type: JavaExec, dependsOn: assemble) {
+task runInvestorServer(type: JavaExec, dependsOn: assemble) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'com.cp.webserver.ServerKt'
-    args '--server.port=9090', '--config.rpc.host=3.83.214.30', '--config.rpc.port=10009', '--config.rpc.username=investor', '--config.rpc.password=investor'
+    args '--server.port=9090', '--config.rpc.host=0.0.0.0', '--config.rpc.port=10009', '--config.rpc.username=investor', '--config.rpc.password=investor'
 }
 
-task runServerAsIssuer(type: JavaExec, dependsOn: assemble) {
+task runIssuerServer(type: JavaExec, dependsOn: assemble) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'com.cp.webserver.ServerKt'
-    args '--server.port=9091', '--config.rpc.host=3.83.214.30', '--config.rpc.port=10006', '--config.rpc.username=issuer', '--config.rpc.password=issuer'
+    args '--server.port=9091', '--config.rpc.host=0.0.0.0', '--config.rpc.port=10006', '--config.rpc.username=issuer', '--config.rpc.password=issuer'
 }
