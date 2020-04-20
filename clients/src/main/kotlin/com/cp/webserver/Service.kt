@@ -126,4 +126,12 @@ class Service(rpc: NodeRPCConnection) {
 
         return commercialPaper
     }
+
+    fun allCommercialPapers(): List<CommercialPaper> {
+        logger.info("Retrieving all commercial papers from Vault")
+        val commercialPapers = rpcOps.vaultQuery(CommercialPaper::class.java).states.map {it-> it.state.data }
+        logger.info("Total commercial papers: {}", commercialPapers.size)
+        return  commercialPapers
+
+    }
 }

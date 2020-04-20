@@ -94,4 +94,16 @@ class Controller(private val service: Service) {
         return ResponseEntity(HttpStatus.OK)
     }
 
+    @GetMapping(value = ["/all"], produces = ["application/json"])
+    private fun allCommercialPapers(@RequestParam identifier: String, @RequestParam fromAccount: String): ResponseEntity<List<CommercialPaper>> {
+        logger.info("Retrieving all commercial papers")
+        try {
+            val commercialPapers = service.allCommercialPapers()
+            return ResponseEntity.ok(commercialPapers)
+        } catch (ex: Exception) {
+            logger.error("Exception occurred while retrieving commercial papers: ${ex.message}")
+        }
+        return ResponseEntity(HttpStatus.OK)
+    }
+
 }
