@@ -23,6 +23,14 @@ dependencies {
     compile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
     compile "org.apache.logging.log4j:log4j-web:${log4j_version}"
     compile "org.slf4j:jul-to-slf4j:$slf4j_version"
+
+
+    implementation( "net.corda:corda-jackson:4.3")
+
+    compile "$accounts_release_group:accounts-contracts:$accounts_release_version"
+    compile "$accounts_release_group:accounts-workflows:$accounts_release_version"
+    compile "$corda_release_group:corda-finance-contracts:$corda_release_version"
+    compile "$corda_release_group:corda-finance-workflows:$corda_release_version"
 }
 
 
@@ -30,14 +38,14 @@ springBoot {
     mainClassName = "com.template.webserver.ServerKt"
 }
 
-task runTemplateClient(type: JavaExec, dependsOn: assemble) {
+task runInvestorServer(type: JavaExec, dependsOn: assemble) {
     classpath = sourceSets.main.runtimeClasspath
-    main = 'com.template.ClientKt'
-    args 'localhost:10006', 'user1', 'test'
+    main = 'com.cp.webserver.ServerKt'
+    args '--server.port=9090', '--config.rpc.host=0.0.0.0', '--config.rpc.port=10009', '--config.rpc.username=investor', '--config.rpc.password=investor'
 }
 
-task runTemplateServer(type: JavaExec, dependsOn: assemble) {
+task runIssuerServer(type: JavaExec, dependsOn: assemble) {
     classpath = sourceSets.main.runtimeClasspath
-    main = 'com.template.webserver.ServerKt'
-    args '--server.port=10050', '--config.rpc.host=localhost', '--config.rpc.port=10006', '--config.rpc.username=user1', '--config.rpc.password=test'
+    main = 'com.cp.webserver.ServerKt'
+    args '--server.port=9091', '--config.rpc.host=0.0.0.0', '--config.rpc.port=10006', '--config.rpc.username=issuer', '--config.rpc.password=issuer'
 }

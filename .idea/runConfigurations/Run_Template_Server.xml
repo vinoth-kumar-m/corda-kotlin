@@ -1,12 +1,12 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run Template Server" type="JetRunConfigurationType" factoryName="Kotlin" singleton="true">
+  <configuration default="false" name="Run Template Server" type="JetRunConfigurationType" singleton="true">
     <module name="com.template.clients.main" />
     <option name="VM_PARAMETERS" value="" />
     <option name="PROGRAM_PARAMETERS" value="" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
     <option name="ALTERNATIVE_JRE_PATH" />
     <option name="PASS_PARENT_ENVS" value="true" />
-    <option name="MAIN_CLASS_NAME" value="com.template.webserver.ServerKt" />
+    <option name="MAIN_CLASS_NAME" value="com.cp.webserver.ServerKt" />
     <option name="WORKING_DIRECTORY" value="" />
     <envs>
       <env name="server.port" value="10050" />
