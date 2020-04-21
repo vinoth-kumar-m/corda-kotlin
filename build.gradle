@@ -164,18 +164,6 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
 
 }
 
-task runInvestorServer(type: JavaExec, dependsOn: assemble) {
-    classpath = sourceSets.main.runtimeClasspath
-    main = 'com.cp.webserver.ServerKt'
-    args '--server.port=9090', '--config.rpc.host=0.0.0.0', '--config.rpc.port=10009', '--config.rpc.username=investor', '--config.rpc.password=investor'
-}
-
-task runIssuerServer(type: JavaExec, dependsOn: assemble) {
-    classpath = sourceSets.main.runtimeClasspath
-    main = 'com.cp.webserver.ServerKt'
-    args '--server.port=9091', '--config.rpc.host=0.0.0.0', '--config.rpc.port=10006', '--config.rpc.username=issuer', '--config.rpc.password=issuer'
-}
-
 task installQuasar(type: Copy) {
     destinationDir rootProject.file("lib")
     from(configurations.quasar) {
